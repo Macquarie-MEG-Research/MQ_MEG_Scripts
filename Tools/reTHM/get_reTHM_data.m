@@ -1,4 +1,5 @@
-function get_reTHM_data(dir_name,confile,grad_trans,headshape_downsampled)
+function [head_movt] = get_reTHM_data(dir_name,confile,grad_trans...
+    ,headshape_downsampled)
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % MRI Estimation for MEG Sourcespace (MEMES)
@@ -84,7 +85,6 @@ print('GOF.png','-dpng','-r300');
 %% Create figure to show how far participant moved across whole recording
 %  In relation to MEG sensors
 
-load('grad_trans.mat');
 figure; ft_plot_sens(grad_trans,'edgealpha',0.2);
 
 for i = 1:5
