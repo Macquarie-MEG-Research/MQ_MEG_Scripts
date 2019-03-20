@@ -1,4 +1,42 @@
-function get_reTHM_data(dir_name,confile,headshape_downsampled)
+function get_reTHM_data(dir_name,confile,grad_trans,headshape_downsampled)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% MRI Estimation for MEG Sourcespace (MEMES)
+%
+%%%%%%%%%%%
+% Inputs:
+%%%%%%%%%%%
+%
+% - dir_name                = directory for saving
+% - confile                 = path to con file
+% - grad_trans              = MEG sensors information read in with
+%                           ft_read_sens and realigned using 
+%                           MQ_MEG_Scripts tools
+% - headshape_downsampled   = headshape read in with ft_read_headshape and
+%                           downsampled to around 100 scalp points
+%
+%%%%%%%%%%%
+% Outputs:
+%%%%%%%%%%%
+%
+% - GOF.png = Goodness of Fit Plot
+% - mrk_over_time_grad_trans.png
+% - movt_mrk_time.png
+% - rotations.png
+% - translations.png
+
+%%%%%%%%%%%%%%%%%%%%%
+% Other Information:
+%%%%%%%%%%%%%%%%%%%%%
+
+% Example function call:
+% get_reTHM_data(dir_name,confile,headshape_downsampled)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Show function call and submit warnings
+disp('get_reTHM_data v0.1');
+ft_warning('Cannot cope with bad markers yet');
 
 % CD to right place
 cd(dir_name);
@@ -151,7 +189,7 @@ direction = {'x','y','z'};
 
 figure;
 for i = 1:3
-    plot(cc_rel(:,i),'Color',col_for_figs(i,:),...
+    plot(head_movt.time,cc_rel(:,i),'Color',col_for_figs(i,:),...
         'LineWidth',3); hold on;
     
     fprintf('Absolute maximum movement in %s: %.4fmm\n',...
@@ -170,7 +208,7 @@ print('translations.png','-dpng','-r300');
 disp('Plotting rotations');
 figure;
 for i = 1:3
-    plot(cc_rel(:,i+3),'Color',col_for_figs(i,:),...
+    plot(head_movt.time,cc_rel(:,i+3),'Color',col_for_figs(i,:),...
         'LineWidth',3); hold on;
     
     fprintf('Absolute maximum rotation in %s: %.4fmm\n',...
