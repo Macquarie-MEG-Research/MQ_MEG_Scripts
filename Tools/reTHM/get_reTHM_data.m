@@ -52,6 +52,37 @@ catch
     disp('If you did... I cannot read reTHM data from the .con file');
 end
 
+%% Calculate NaNs and correct
+for i = 1:size(head_movt.pos,2)
+    num_of_nans = sum(isnan(squeeze(head_movt.pos(:,i,1))));
+    perc_of_nans = ((length(head_movt.pos)-num_of_nans)...
+        ./length(head_movt.pos)).*100;
+    
+    % Show warning if over 10%... if not show actual percetnage
+    if 100-perc_of_nans > 10
+        fprintf('Percentage NaNs for %8s: %.3f BAD MARKER?\n',...
+            head_movt.label{i},100-perc_of_nans);
+        
+    else
+        fprintf('Percentage NaNs for %8s: %.3f\n',head_movt.label{i},...
+            100-perc_of_nans)
+    end
+end
+
+% This is a very very simple NaN correction - filling in with the previous
+% entry. If the first/last entry is missing the nearest available value is
+% used. We could make it more complicated.. but I guess this will do for
+% now.
+
+disp('Correcting NaNs');
+
+for i = 1:size(head_movt.pos,2)
+    for j = 1:size(head_movt.pos,3)
+        head_movt.pos(:,i,j) = fillmissing(head_movt.pos(:,i,j),...
+            'previous','EndValues','nearest');
+    end
+end
+
 %% Show goodness of fit
 
 disp('Calculating Goodness of Fit for the 5 markers');
