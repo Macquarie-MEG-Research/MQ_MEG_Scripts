@@ -1,5 +1,5 @@
 function [headshape_downsampled] = downsample_headshape_child(path_to_headshape,...
-    varargin)
+    numvertices,varargin)
 
 % If not specified include the facial points
 if isempty(varargin)
