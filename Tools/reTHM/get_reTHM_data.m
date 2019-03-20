@@ -1,4 +1,4 @@
-function [head_movt] = get_reTHM_data(dir_name,confile,grad_trans...
+function [head_movt,confound] = get_reTHM_data(dir_name,confile,grad_trans...
     ,headshape_downsampled)
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -251,6 +251,10 @@ ylabel('Movement (mm)');
 xlabel('Time (Sec)')
 set(gca,'FontSize',20);
 print('rotations.png','-dpng','-r300');
+
+% Export trans and rot for including as confounds
+cc_dem = [cc - repmat(nanmean(cc,2),1,size(cc,2))]';
+confound = [cc_dem ones(size(cc_dem,1),1)];
 
 end
 
