@@ -1,5 +1,5 @@
 function [head_movt,confound] = get_reTHM_data(dir_name,confile,grad_trans...
-    ,headshape_downsampled)
+    ,headshape_downsampled, bad_coil)
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % MRI Estimation for MEG Sourcespace (MEMES)
@@ -15,6 +15,9 @@ function [head_movt,confound] = get_reTHM_data(dir_name,confile,grad_trans...
 %                           MQ_MEG_Scripts tools
 % - headshape_downsampled   = headshape read in with ft_read_headshape and
 %                           downsampled to around 100 scalp points
+% - bad_coil                = list of bad coils (up to length of 2). 
+%                           Enter as: {'LPAred','RPAyel','PFblue',...
+%                           'LPFwh','RPFblack'}
 %
 %%%%%%%%%%%
 % Outputs:
@@ -37,7 +40,9 @@ function [head_movt,confound] = get_reTHM_data(dir_name,confile,grad_trans...
 
 % Show function call and submit warnings
 disp('get_reTHM_data v0.1');
-ft_warning('Cannot cope with bad markers yet');
+ft_warning('Cannot cope with 2 bad markers yet');
+assert(length(bad_coil)<3,['You need at least 3 good coils for',...
+    'accurate alignment\n']);
 
 % CD to right place
 cd(dir_name);
@@ -51,6 +56,23 @@ catch
         'Macquarie-MEG-Research/MQ_MEG_Scripts'])
     disp('If you did... I cannot read reTHM data from the .con file');
 end
+
+%% Remove bad_coils
+
+mrk_colors = ['r','y','b','w','k'];
+
+if strcmp(bad_coil,'')
+    
+else
+    disp('Removing bad coil');
+    find_bad_coil_pos = find(ismember(head_movt.label,bad_coil{:}));
+    
+    head_movt.label(find_bad_coil_pos) = [];
+    head_movt.pos(:,find_bad_coil_pos,:) = [];
+    head_movt.gof(:,find_bad_coil_pos) = [];
+    mrk_colors(find_bad_coil_pos) = [];
+end
+
 
 %% Calculate NaNs and correct
 for i = 1:size(head_movt.pos,2)
@@ -87,11 +109,9 @@ end
 
 disp('Calculating Goodness of Fit for the 5 markers');
 
-mrk_colors = ['r','y','b','w','k'];
-
 figure;
 
-for i = 1:5
+for i = 1:size(head_movt.pos,2)
     plot(head_movt.time,head_movt.gof(:,i),mrk_colors(i),'LineWidth',3); 
     hold on;
 end
@@ -118,7 +138,7 @@ print('GOF.png','-dpng','-r300');
 
 figure; ft_plot_sens(grad_trans,'edgealpha',0.2);
 
-for i = 1:5
+for i = 1:size(head_movt.pos,2)
 
     ft_plot_mesh(squeeze(head_movt.pos(:,i,:))...
         ,'vertexcolor',mrk_colors(i));
@@ -134,7 +154,7 @@ disp(['Calculating absolute movement in relation to the first',...
 
 movt = [];
 
-for i = 1:5
+for i = 1:size(head_movt.pos,2)
     for j = 1:length(head_movt.pos)
         movt(i,j) = pdist2(squeeze(head_movt.pos(1,i,:))',...
             squeeze(head_movt.pos(j,i,:))');
@@ -143,7 +163,7 @@ end
     
 figure;
 % For every marker
-for i = 1:5
+for i = 1:size(head_movt.pos,2)
     % Plot the head movt over time
     plot(head_movt.time,movt(i,:),...
         mrk_colors(i),'LineWidth',2); hold on;
@@ -189,7 +209,7 @@ disp('in relation to first marker measurement');
 % Load headshape + fiducial information
 fiducials_over_time = [];
 
-for i = 1:length(head_movt.pos);
+for i = 1:length(head_movt.pos)
     try
     [R,T,Yf,Err]    = rot3dfit(squeeze(head_movt.pos(1,:,:)),...
             squeeze(head_movt.pos(i,:,:)));%calc rotation transform
