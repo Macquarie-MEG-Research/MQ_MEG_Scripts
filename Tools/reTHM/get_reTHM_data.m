@@ -64,14 +64,15 @@ mrk_colors = ['r','y','b','w','k'];
 if strcmp(bad_coil,'')
     
 else
-    disp('Removing bad coil');
-    find_bad_coil_pos = find(ismember(head_movt.label,bad_coil{:}));
-    
-    head_movt.label(find_bad_coil_pos) = [];
-    head_movt.pos(:,find_bad_coil_pos,:) = [];
-    head_movt.gof(:,find_bad_coil_pos) = [];
-    mrk_colors(find_bad_coil_pos) = [];
-end
+    for coil = 1:length(bad_coil)
+        fprintf('Removing %s coil',bad_coil{coil});
+        find_bad_coil_pos = find(ismember(head_movt.label,bad_coil{coil}));
+        
+        head_movt.label(find_bad_coil_pos) = [];
+        head_movt.pos(:,find_bad_coil_pos,:) = [];
+        head_movt.gof(:,find_bad_coil_pos) = [];
+        mrk_colors(find_bad_coil_pos) = [];
+    end
 
 
 %% Calculate NaNs and correct
