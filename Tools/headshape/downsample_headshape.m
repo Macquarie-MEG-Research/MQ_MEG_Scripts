@@ -1,5 +1,17 @@
-function [headshape_downsampled] = downsample_headshape(path_to_headshape,...
-    numvertices,varargin)
+function [headshape_downsampled] = downsample_headshape(path_to_headshape,varargin)
+
+% Check if MQ_MEG_Scripts has been added to your MATLAB path
+
+if exist('parsePolhemus') == 2
+    disp('MQ_MEG_Scripts is in your MATLAB path :)')
+else
+    error(['Did you add all of MQ_MEG_Scripts to your MATLAB path? ',...
+        'Download from ',...
+        'https://github.com/Macquarie-MEG-Research/MQ_MEG_Scripts',...
+        ' ...and type addpath(genpath(path_to_MQ_MEG_Scripts))']);
+end
+
+%% Start of function proper
 
 % If not specified include the facial points
 if isempty(varargin)
@@ -14,9 +26,8 @@ end
 headshape = ft_read_headshape(path_to_headshape);
 % Convert to cm
 headshape = ft_convert_units(headshape,'cm');
-% Convert to BESA co-ordinates
-%         headshape.pos = cat(2,fliplr(headshape.pos(:,1:2)),headshape.pos(:,3));
-%         headshape.pos(:,2) = headshape.pos(:,2).*-1;
+% Save a version for later
+headshape_orig = headshape;
 
 % Get indices of facial points (up to 3cm above nasion)
 
@@ -25,7 +36,7 @@ headshape = ft_convert_units(headshape,'cm');
 % Possibly different for child system?
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-count_facialpoints = find(headshape.pos(:,3)<3);
+count_facialpoints = find(headshape.pos(:,3)<3 & headshape.pos(:,1)>1);
 if isempty(count_facialpoints)
     disp('CANNOT FIND ANY FACIAL POINTS - COREG BY ICP MAY BE INACCURATE');
 else
@@ -37,33 +48,57 @@ end
 % Remove facial points for now
 headshape.pos(count_facialpoints,:) = [];
 
+% Plot the facial and head points in separate colours
+figure;
+if isempty(count_facialpoints)
+    disp('Not plotting any facial points')
+else
+    ft_plot_mesh(facialpoints,'vertexcolor','r','vertexsize',10); hold on;
+end
+ft_plot_mesh(headshape.pos,'vertexcolor','k','vertexsize',10); hold on;
+view([90 0]);
+
 % Create mesh out of headshape downsampled to x points specified in the
 % function call
-cfg.numvertices = numvertices;
+cfg = [];
+%cfg.numvertices = 1000;
 cfg.method = 'headshape';
 cfg.headshape = headshape.pos;
 mesh = ft_prepare_mesh(cfg, headshape);
 
-% Replace the headshape info with the mesh points
-headshape.pos = mesh.pos;
+%
+[decimated_headshape] = decimate_headshape(headshape, 'gridaverage');
+
 
 % Create figure for quality checking
-figure; subplot(2,2,1);ft_plot_mesh(mesh); hold on;
-title('Downsampled Mesh');
+figure; subplot(2,2,1);ft_plot_mesh(mesh,'facecolor','k',...
+    'facealpha',0.1,'edgealpha',0); hold on;
+ft_plot_mesh(headshape_orig.pos,'vertexcolor','r','vertexsize',2); hold on;
+ft_plot_mesh(decimated_headshape,'vertexcolor','b','vertexsize',10); hold on;
+view(-180,0);
+subplot(2,2,2);ft_plot_mesh(mesh,'facecolor','k',...
+    'facealpha',0.1,'edgealpha',0); hold on;
+ft_plot_mesh(headshape_orig.pos,'vertexcolor','r','vertexsize',2); hold on;
+ft_plot_mesh(decimated_headshape,'vertexcolor','b','vertexsize',10); hold on;
 view(0,0);
-subplot(2,2,2);ft_plot_mesh(headshape); hold on;
-title('Downsampled Headshape View 1');
-view(0,0);
-subplot(2,2,3);ft_plot_mesh(headshape); hold on;
-title('Downsampled Headshape View 2');
+subplot(2,2,3);ft_plot_mesh(mesh,'facecolor','k',...
+    'facealpha',0.1,'edgealpha',0); hold on;
+ft_plot_mesh(headshape_orig.pos,'vertexcolor','r','vertexsize',2); hold on;
+ft_plot_mesh(decimated_headshape,'vertexcolor','b','vertexsize',10); hold on;
 view(90,0);
-subplot(2,2,4);ft_plot_mesh(headshape); hold on;
-title('Downsampled Headshape View 3');
-view(180,0);
-print('headshape_quality','-dpdf');
+subplot(2,2,4);ft_plot_mesh(mesh,'facecolor','k',...
+    'facealpha',0.1,'edgealpha',0); hold on;
+ft_plot_mesh(headshape_orig.pos,'vertexcolor','r','vertexsize',2); hold on;
+ft_plot_mesh(decimated_headshape,'vertexcolor','b','vertexsize',10); hold on;
+view(-90,0);
+
+print('headshape_quality','-dpng');
+
+% Replace headshape.pos with decimated pos
+headshape.pos = decimated_headshape;
 
 % Only include points facial points 2cm below nasion
-rrr  = find(facialpoints(:,3) > -2);
+%rrr  = find(facialpoints(:,3) > -2);
 
 
 % Add the facial points back in (default) or leave out if user specified
@@ -71,9 +106,9 @@ rrr  = find(facialpoints(:,3) > -2);
 if strcmp(include_facial_points,'yes')
     try
         % Add the facial info back in
-        % Only include points facial points 2cm below nasion        
+        % Only include points facial points 2cm below nasion
         headshape.pos = vertcat(headshape.pos,...
-    facialpoints(find(facialpoints(:,3) > -2),:));
+            facialpoints(find(facialpoints(:,3) > -2),:));
     catch
         disp('Cannot add facial info back into headshape');
     end
@@ -85,17 +120,23 @@ end
 %Add in names of the fiducials from the sensor
 headshape.fid.label = {'NASION','LPA','RPA'};
 
-% Convert fiducial points to BESA
-%         headshape.fid.pos = cat(2,fliplr(headshape.fid.pos(:,1:2)),headshape.fid.pos(:,3));
-%         headshape.fid.pos(:,2) = headshape.fid.pos(:,2).*-1;
-
 % Plot for quality checking
-figure;%ft_plot_sens(sensors) %plot channel position : between the 1st and 2nd coils
-ft_plot_headshape(headshape) %plot headshape
-view(0,0);
-print('headshape_quality2','-dpdf');
+
+view_angle = [-180, 0]
+figure;
+
+for angle = 1:length(view_angle)
+    
+    subplot(1,2,angle)
+    ft_plot_headshape(headshape,'vertexcolor','k','vertexsize',12) %plot headshape
+    hold on;
+    ft_plot_headshape(headshape_orig,'vertexcolor','r','vertexsize',2) %plot headshape
+    view(view_angle(angle),10);
+end
+
+print('headshape_quality2','-dpng');
+
 
 % Export filename
+headshape_downsampled = ft_convert_units(headshape_downsampled,'mm');
 headshape_downsampled = headshape;
-
-end
