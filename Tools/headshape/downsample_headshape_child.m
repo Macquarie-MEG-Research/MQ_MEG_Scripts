@@ -1,3 +1,29 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% headshape_downsampled_child: a function to downsample headshape information 
+% from children (aged 3-6) for more accurate coregistration. 
+% Typically the function will downsample headshape information to 200 
+% scalp points, whilst preserving facial information (eyebrows, 
+% eye-sockets and nose)
+%
+% Designed for data from a Polhemus system
+%
+% Author: Robert Seymour (robert.seymour@mq.edu.au)
+%
+%%%%%%%%%%%
+% Inputs:
+%%%%%%%%%%%
+%
+% - path_to_headshape     = path to .hsp file
+% - include_facial_points = 'yes' or 'no' (OPTIONAL - will remove any 
+%                           facial info if set to 'no')
+%%%%%%%%%%%
+% Outputs:
+%%%%%%%%%%%
+%
+% - downsampled_headshape = the downsampled headshape information
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function [headshape_downsampled] = downsample_headshape_child(path_to_headshape,...
     numvertices,varargin)
 

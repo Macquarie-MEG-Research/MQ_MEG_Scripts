@@ -1,6 +1,33 @@
 function [headshape_downsampled] = downsample_headshape(path_to_headshape,varargin)
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% headshape_downsampled: a function to downsample headshape information for
+% more accurate coregistration. Typically the function will downsample
+% headshape information to 200 scalp points, whilst preserving facial
+% information (eyebrows, eye-sockets and nose)
+%
+% Designed for data from a Polhemus system
+%
+% Author: Robert Seymour (robert.seymour@mq.edu.au)
+%
+%%%%%%%%%%%
+% Inputs:
+%%%%%%%%%%%
+%
+% - path_to_headshape     = path to .hsp file
+% - include_facial_points = 'yes' or 'no' (OPTIONAL - will remove any 
+%                           facial info if set to 'no')
+%%%%%%%%%%%
+% Outputs:
+%%%%%%%%%%%
+%
+% - downsampled_headshape = the downsampled headshape information
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Check if MQ_MEG_Scripts has been added to your MATLAB path
+
+warning(['Needs further testing: is gridaverage or non-uniform',...
+    'decimation better?']);
 
 if exist('parsePolhemus') == 2
     disp('MQ_MEG_Scripts is in your MATLAB path :)')
