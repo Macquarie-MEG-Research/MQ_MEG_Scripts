@@ -32,7 +32,7 @@ bad_coil = '';
 
 %% Test downsample_headshape
 
-downsample_headshape_child(hspfile)
+headshape_downsampled = downsample_headshape_child(hspfile)
 
 %% Test mq_realign_sens
 

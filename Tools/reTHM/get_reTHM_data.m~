@@ -28,8 +28,7 @@ function [head_movt,confound] = get_reTHM_data(dir_name,confile,grad_trans...
 %
 % - head_movt   = structure with reTHM data, time and goodness of fit 
 %               information 
-% - confound    = matrix of rotations (x,y,z) and translations (x,y,z)
-%               which can be used with ft_regressconfound
+% - confound    = 
 %
 % - GOF.png     = Goodness of Fit Plot
 % - mrk_over_time_grad_trans.png
