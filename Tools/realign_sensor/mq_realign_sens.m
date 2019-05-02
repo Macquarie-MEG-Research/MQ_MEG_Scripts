@@ -1,5 +1,35 @@
 function mq_realign_sens(dir_name,elpfile,hspfile,confile,mrkfile,...
     bad_coil,method)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+% mq_realign_sens: A function to realign the MEG sensors based on positions
+% in mrk file (i.e. elp --> mrk). Designed for Yokogawa MEG-160 data.
+% You can use rot3dfit or icp methods and enter up to 2 bad coils.
+% 
+%%%%%%%%%%%
+% Inputs:
+%%%%%%%%%%%
+% - dir_name            = directory for saving
+% - elpfile             = path to elp file
+% - hspfile             = path to hsp file
+% - confile             = path to con file
+% - mrkfile             = path to mrk file
+% - bad_coil            = list of bad coils (up to length of 2). Enter as:
+%                         {'LPAred','RPAyel','PFblue','LPFwh','RPFblack'}
+% - method              = method used to realign MEG sensors based on 5 
+%                       marker coils. Use 'rot3dfit' or 'icp'. For some
+%                       reason the usual rot3dfit method seems to fail 
+%                       sometimes. Try using 'icp' in this case...
+%
+%%%%%%%%%%%
+% Outputs:
+%%%%%%%%%%%
+% - grad_trans          = correctly transformed MEG sensors
+% - shape               = headshape and fiducial information
+
+% Author:  Robert Seymour (robert.seymour@mq.edu.au)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Check if bad_coils are entered correctly
 if strcmp(bad_coil,'')
@@ -11,6 +41,10 @@ else
         end
     end
 end
+
+% Check if user has at least 3 'good' coils
+assert(length(bad_coil)<3,'You need at least 3 good coils for accurate alignment\n');
+
 
 % Check if MQ_MEG_Scripts has been added to your MATLAB path
 
@@ -44,9 +78,6 @@ mrk      = ft_read_headshape(mrkfile,'format','yokogawa_mrk');
 mrk      = ft_convert_units(mrk,'mm'); %in mm
 
 %% Perform Realighment Using Paul's Functions
-
-
-
 
 if strcmp(bad_coil,'')
     disp('NO BAD MARKERS');
