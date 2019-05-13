@@ -1,5 +1,5 @@
 function [head_movt,confound] = get_reTHM_data(dir_name,confile,grad_trans...
-    ,headshape_downsampled, bad_coil)
+    ,path_to_headshape, bad_coil)
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % get_reTHM_data: function to read reTHM (head movement) data from a .con
@@ -16,8 +16,7 @@ function [head_movt,confound] = get_reTHM_data(dir_name,confile,grad_trans...
 % - grad_trans              = MEG sensors information read in with
 %                           ft_read_sens and realigned using 
 %                           MQ_MEG_Scripts tools
-% - headshape_downsampled   = headshape read in with ft_read_headshape and
-%                           downsampled to around 100 scalp points
+% - path_to_headshape     = path to .hsp file
 % - bad_coil                = list of bad coils (up to length of 2). 
 %                           Enter as: {'LPAred','RPAyel','PFblue',...
 %                           'LPFwh','RPFblack'}
@@ -64,6 +63,10 @@ catch
         'Macquarie-MEG-Research/MQ_MEG_Scripts'])
     disp('If you did... I cannot read reTHM data from the .con file');
 end
+
+% Read headshape data from hsp file
+headshape = ft_read_headshape(path_to_headshape);
+headshape = ft_convert_units(headshape,'mm');
 
 %% Remove bad_coils
 
@@ -226,7 +229,7 @@ for i = 1:length(head_movt.pos)
     meg2head_transm = [[R;T]'; 0 0 0 1];%reorganise and make 4*4 transformation matrix
                 
     fiducials_over_time(i,:,:,:) = ft_warp_apply(meg2head_transm,...
-    headshape_downsampled.fid.pos);
+    headshape.fid.pos);
     catch
         fiducials_over_time(i,:,:,:) = nan(3);
     end
