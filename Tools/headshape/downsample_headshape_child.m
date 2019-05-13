@@ -16,6 +16,7 @@
 % - path_to_headshape     = path to .hsp file
 % - include_facial_points = 'yes' or 'no' (OPTIONAL - will remove any 
 %                           facial info if set to 'no')
+% - decimate_method       = 'gridaverage' or 'nonuniform' (OPTIONAL)
 %%%%%%%%%%%
 % Outputs:
 %%%%%%%%%%%
@@ -25,14 +26,15 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [headshape_downsampled] = downsample_headshape_child(path_to_headshape,...
-    numvertices,varargin)
+    varargin)
 
 % If not specified include the facial points
 if isempty(varargin)
     include_facial_points = 'yes';
-    
+    decimate_method = 'gridaverage';
 else
     include_facial_points = varargin{1};
+    decimate_method = varargin{2}
 end
 
 
@@ -40,6 +42,11 @@ end
 headshape = ft_read_headshape(path_to_headshape);
 % Convert to cm
 headshape = ft_convert_units(headshape,'cm');
+
+% Remove outliers (points greater than -6cm below nasion
+outlier_facialpoints = find(headshape.pos(:,3)<-6);
+headshape.pos(outlier_facialpoints,:) = [];
+
 % Save a version for later
 headshape_orig = headshape;
 
@@ -81,7 +88,7 @@ cfg.headshape = headshape.pos;
 mesh = ft_prepare_mesh(cfg, headshape);
 
 %
-[decimated_headshape] = decimate_headshape(headshape, 'gridaverage');
+[decimated_headshape] = decimate_headshape(headshape, decimate_method);
 
 
 % Create figure for quality checking
