@@ -165,5 +165,5 @@ print('headshape_quality2','-dpng');
 
 
 % Export filename
-headshape_downsampled = ft_convert_units(headshape_downsampled,'mm');
 headshape_downsampled = headshape;
+headshape_downsampled = ft_convert_units(headshape_downsampled,'mm');
