@@ -1,5 +1,5 @@
-function mq_realign_sens(dir_name,elpfile,hspfile,confile,mrkfile,...
-    bad_coil,method)
+function [grad_trans] = mq_realign_sens(dir_name,elpfile,hspfile,...
+    confile,mrkfile,bad_coil,method)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 
 % mq_realign_sens: A function to realign the MEG sensors based on positions
