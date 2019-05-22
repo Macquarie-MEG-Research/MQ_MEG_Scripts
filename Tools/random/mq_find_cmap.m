@@ -1,12 +1,12 @@
 % Function to find the specified colormap.mat file and add to workspace
 
-function mq_find_cmap(color_map_name)
+function [ddd] = mq_find_cmap(color_map_name)
 
 try
-    ttt = which([color_map_name '.mat']);
-    load(ttt)
+    ddd = which([color_map_name '.mat']);
+    %evalin('base','load(ddd)');
 catch
-    error('Could not find colormap %s',[color_map_name] '.mat')
+    error('Could not find colormap')
 end
 end
 
