@@ -10,6 +10,30 @@ Warning: use these scripts at your own risk - some have not been fully tested!
 
 ## Contributing
 
-Please contribute your scripts to this repository by submitting a pull request and/or emailing scripts to [Robert Seymour](mailto:robert.seymour@mq.edu.au), [Paul Sowman](mailto:paul.sowman@mq.edu.au) or [Wei He](mailto:wei.he@mq.edu.au). 
+Please contribute your MATLAB (or Python) scripts to this repository by submitting a pull request and/or emailing scripts to [Robert Seymour](mailto:robert.seymour@mq.edu.au), [Paul Sowman](mailto:paul.sowman@mq.edu.au) or [Wei He](mailto:wei.he@mq.edu.au). 
 
-It is advised you also include a help function, text file or .md file explaining what the script does, any inputs/outputs and other helfpul information.
+It is advised you also include some information about the function along the lines of the code snippet below. Also include a WARNING in your code if it is still under development.
+
+```matlab
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% function_name: a function to do...
+%
+% Some more information
+%
+% Author: Mr MEG (mr.MEG@mq.edu.au)
+%
+%%%%%%%%%%%
+% Inputs:
+%%%%%%%%%%%
+%
+% - input_1     = ...
+% - input_2     = ...
+%
+%%%%%%%%%%%
+% Outputs:
+%%%%%%%%%%%
+%
+% - output_1    = ...
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
