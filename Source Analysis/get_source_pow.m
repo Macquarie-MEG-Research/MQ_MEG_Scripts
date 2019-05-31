@@ -31,7 +31,7 @@ function [source] = get_source_pow(data_clean,sourceall,toi)
 
 fprintf('Getting source level power from %.3fs to %.3fs\n',toi(1),toi(2)) 
 
-% average across time the dipole moments within the N1 latency range
+% average across time the dipole moments within the toi
 ind    = find(data_clean.time{1}>=toi(1) & data_clean.time{1}<=toi(2));
 tmpmom = sourceall.avg.mom(sourceall.inside);
 mom    = sourceall.avg.pow(sourceall.inside);
@@ -39,14 +39,19 @@ for ii = 1:length(tmpmom)
     mom(ii) = mean(abs(tmpmom{ii}(ind)));
 end
 
-% insert the N1 amplitude in the 'pow' field and save to disk, the
-% original pow contains the mean amplitude-squared across the
+% Create new source structure with 'pow' containing the mean amplitude across the
 % time-window used for the channel-level covariance computation
 source = sourceall;
 source.avg.pow(source.inside) = abs(mom);
+
+try
 source.cfg = rmfield(source.cfg,...
     {'headmodel' 'callinfo'}); % this is removed because it takes up a lot of memory
 source = rmfield(source,...
     {'time'}); % this is removed because it takes up a lot of memory
+
+catch
+    disp('cfg field has already been removed');
+end
 
 end
