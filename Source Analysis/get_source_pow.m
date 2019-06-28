@@ -32,7 +32,7 @@ function [source] = get_source_pow(data_clean,sourceall,toi)
 fprintf('Getting source level power from %.3fs to %.3fs\n',toi(1),toi(2)) 
 
 % average across time the dipole moments within the toi
-ind    = find(data_clean.time{1}>=toi(1) & data_clean.time{1}<=toi(2));
+ind    = find(sourceall.time >=toi(1) & sourceall.time <=toi(2));
 tmpmom = sourceall.avg.mom(sourceall.inside);
 mom    = sourceall.avg.pow(sourceall.inside);
 for ii = 1:length(tmpmom)
