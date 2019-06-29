@@ -16,6 +16,7 @@ function [sat] = mq_detect_saturations(dir_name,confile,varargin)
 %%%%%%%%%%%%%%%%%%
 % - min_length    = minumum length of flat data to treat as saturations
 %                 (default = 0.01s)
+% - MEG_system    = 'child' or 'adult' (default = 'adult')
 %
 %%%%%%%%%%%
 % Outputs:
@@ -26,8 +27,11 @@ function [sat] = mq_detect_saturations(dir_name,confile,varargin)
 
 if isempty(varargin)
     min_length    = 0.01;
+    meg_system    = 'adult';
 else
     min_length    = varargin{1};
+    meg_system    = varargin{2};
+
 end
 
 %% CD to correct directory
@@ -48,16 +52,26 @@ cfg = ft_definetrial(cfg);
 cfg.continuous = 'yes';
 alldata = ft_preprocessing(cfg);
 
-cfg = [];
-cfg.channel = alldata.label(1:160);
-alldata = ft_selectdata(cfg,alldata);
+if strcmp(meg_sytem,'adult')
+    
+    cfg = [];
+    cfg.channel = alldata.label(1:160);
+    alldata = ft_selectdata(cfg,alldata);
+    
+elseif strcmp(meg_sytem,'child')
+    cfg = [];
+    cfg.channel = alldata.label(1:125);
+    alldata = ft_selectdata(cfg,alldata);
+else
+    error('Cannot find the correct system...')
+end
 
 % Array to hold info about saturated data
 sat = [];
 count = 1;
 
 disp('Searching the data channel by channel for signal saturation...');
-for i = 1:160
+for i = 1:length(alldata.label)
     
     % Use regular expressions to get the index and number of
     % repetitions in the signal
