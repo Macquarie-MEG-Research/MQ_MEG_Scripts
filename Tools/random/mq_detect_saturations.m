@@ -52,13 +52,13 @@ cfg = ft_definetrial(cfg);
 cfg.continuous = 'yes';
 alldata = ft_preprocessing(cfg);
 
-if strcmp(meg_sytem,'adult')
+if strcmp(meg_system,'adult')
     
     cfg = [];
     cfg.channel = alldata.label(1:160);
     alldata = ft_selectdata(cfg,alldata);
     
-elseif strcmp(meg_sytem,'child')
+elseif strcmp(meg_system,'child')
     cfg = [];
     cfg.channel = alldata.label(1:125);
     alldata = ft_selectdata(cfg,alldata);
