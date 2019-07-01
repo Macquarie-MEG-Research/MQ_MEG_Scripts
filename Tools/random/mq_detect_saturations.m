@@ -72,7 +72,6 @@ count = 1;
 
 disp('Searching the data channel by channel for signal saturation...');
 for i = 1:length(alldata.label)
-    
     % Use regular expressions to get the index and number of
     % repetitions in the signal
     [time_id, number_N] = regexp(regexprep(num2str...
@@ -86,7 +85,7 @@ for i = 1:length(alldata.label)
     if any(number_N>min_length*alldata.fsample)
         
         % Add channel to sat label
-        fprintf('%s has saturations\n',alldata.label{i,1});
+        fprintf('%10s saturations = YES \n',alldata.label{i,1});
         sat.label{count,1} = alldata.label{i,1};
         
         % Find the indices of the saturations
@@ -112,7 +111,11 @@ for i = 1:length(alldata.label)
         end
         
         count = count+1;
+    else
+     fprintf('%10s saturations = NO \n',alldata.label{i,1});
     end
+    
+    
     
 end
 
