@@ -14,34 +14,48 @@ function [sat] = mq_detect_saturations(dir_name,confile,varargin)
 %%%%%%%%%%%%%%%%%%
 % Variable Inputs:
 %%%%%%%%%%%%%%%%%%
-% - min_length    = minumum length of flat data to treat as saturations
-%                 (default = 0.01s)
-% - MEG_system    = 'child' or 'adult' (default = 'adult')
+% - min_length          = minumum length of flat data to treat as
+%                       saturations (default = 0.01s)
+% - MEG_system          = 'child' or 'adult' (default = 'adult')
+% - detect_reps_method  = 'string_comp' or 'array'
 %
 %%%%%%%%%%%
 % Outputs:
 %%%%%%%%%%%
 % - sat           = structure with labels and times of saturation
 %
+% EXAMPLE: mq_detect_saturations(dir_name,confile);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if isempty(varargin)
     min_length    = 0.01;
     meg_system    = 'adult';
+    detect_reps_method = 'array';
+    
 else
-    min_length    = varargin{1};
-    meg_system    = varargin{2};
+    min_length          = varargin{1};
+    meg_system          = varargin{2};
+    detect_reps_method  = varargin{3};
+end
 
+% Display warning messages for either method
+if strcmp(detect_reps_method,'array')
+    ft_warning(['The array method is not fully tested yet. Treat '...
+        'results with caution']);
+    
+elseif strcmp(detect_reps_method,'string_comp')
+    ft_warning(['The string_comp method runs slowly on MATLAB versions'...
+        ' earlier than 2015']);
 end
 
 % Try to extract the name of the confile
 try
-
-find_last_slash = strfind(confile,'/');
-find_last_slash = find_last_slash(end);
-
-confile_short = confile((find_last_slash+1):(strfind(confile,...
-    '.con')-1));
+    
+    find_last_slash = strfind(confile,'/');
+    find_last_slash = find_last_slash(end);
+    
+    confile_short = confile((find_last_slash+1):(strfind(confile,...
+        '.con')-1));
 catch
     disp('Cannot extract .con file name.');
 end
@@ -83,21 +97,51 @@ sat = [];
 count = 1;
 
 disp('Searching the data channel by channel for signal saturation...');
+
+ft_progress('init', 'text', 'Please wait...')
+
 for i = 1:length(alldata.label)
-    % Use regular expressions to get the index and number of
-    % repetitions in the signal
-    [time_id, number_N] = regexp(regexprep(num2str...
-        (~diff(alldata.trial{1,1}(i,:))),' ','')...
-        ,'1+','start','match');
+    % Display the progress of the function
+    ft_progress(i/length(alldata.label),...
+        'Searching for saturations: %s',alldata.label{i});
     
-    % Convert from cell to ?
-    number_N = cellfun('length',number_N);
+    if strcmp(detect_reps_method,'array')
+
+        % Use diff & find functions to get the index and number of
+        % repetitions in the signal
+        X = diff(alldata.trial{1,1}(i,:))~=0;
+        B = find([true,X]); % begin of each group
+        E = find([X,true]); % end of each group
+        D = 1+E-B; % the length of each group
+        
+        Y = D>1;
+        time_id = B(Y);
+        yyy = E(Y);
+        
+        number_N = yyy-time_id;
+        
+        clear X B E D Y yyy
+        
+    elseif strcmp(detect_reps_method,'string_comp')
+        % Use regular expressions to get the index and number of
+        % repetitions in the signal.
+        [time_id, number_N] = regexp(regexprep(num2str...
+            (~diff(alldata.trial{1,1}(i,:))),' ','')...
+            ,'1+','start','match');
+        
+        % Convert from cell to ?
+        number_N = cellfun('length',number_N);
+        
+    else
+        ft_error(['ERROR: The user did specify which method to use for'...
+            ' repetition detection detection']);
+    end
     
     % If any of the repetitions are over min_length
     if any(number_N>min_length*alldata.fsample)
         
         % Add channel to sat label
-        fprintf('%10s saturations = YES \n',alldata.label{i,1});
+        %fprintf('%10s saturations = YES \n',alldata.label{i,1});
         sat.label{count,1} = alldata.label{i,1};
         
         % Find the indices of the saturations
@@ -123,11 +167,10 @@ for i = 1:length(alldata.label)
         end
         
         count = count+1;
-    else
-     fprintf('%10s saturations = NO \n',alldata.label{i,1});
     end
     
 end
+ft_progress('close');
 
 if ~isempty(sat)
     
@@ -161,7 +204,7 @@ if ~isempty(sat)
     try
         print(['saturated_chans_' confile_short],'-dpng','-r200');
     catch
-        print('saturated_chans','-dpng','-r200');    
+        print('saturated_chans','-dpng','-r200');
     end
     
     %% Plot how much of the data is saturated
@@ -176,7 +219,7 @@ if ~isempty(sat)
     time_saturated(length(time_saturated)+1) = length(sat.alltime)./...
         alldata.fsample;
     
-    figure; 
+    figure;
     set(gcf,'Position',[100 100 900 800]);
     stem(time_saturated,'r','LineWidth',2);
     set(gca,'xtick',[1:length(time_saturated)],'xticklabel',...
@@ -189,14 +232,14 @@ if ~isempty(sat)
     else
         ax.XAxis.FontSize = 10;
     end
-
+    
     ax.YAxis.FontSize = 16;
     view(90,90)
     try
         print(['time_saturated' confile_short],'-dpng','-r200');
     catch
-        print('time_saturated','-dpng','-r200');    
+        print('time_saturated','-dpng','-r200');
     end
-
+    
 end
 
