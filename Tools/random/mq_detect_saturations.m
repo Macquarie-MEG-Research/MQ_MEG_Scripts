@@ -34,6 +34,18 @@ else
 
 end
 
+% Try to extract the name of the confile
+try
+
+find_last_slash = strfind(confile,'/');
+find_last_slash = find_last_slash(end);
+
+confile_short = confile((find_last_slash+1):(strfind(confile,...
+    '.con')-1));
+catch
+    disp('Cannot extract .con file name.');
+end
+
 %% CD to correct directory
 disp('Going to the directory specified by dir_name')
 cd(dir_name);
@@ -115,13 +127,11 @@ for i = 1:length(alldata.label)
      fprintf('%10s saturations = NO \n',alldata.label{i,1});
     end
     
-    
-    
 end
 
 if ~isempty(sat)
     
-    % Find the overall times when the data is saturated (on any channel)
+    %% Find the overall times when the data is saturated (on any channel)
     all_sat = zeros(length(sat.label),length(alldata.trial{1,1}));
     
     for i = 1:length(sat.label)
@@ -140,15 +150,21 @@ if ~isempty(sat)
     cfg.channel = sat.label;
     data_saturations = ft_selectdata(cfg,alldata);
     
-    % Use ft_layoutplot to see the location of the saturated channels
+    %% Use ft_layoutplot to see the location of the saturated channels
     cfg = [];
     %cfg.lay =lay;
     cfg.box = 'no';
     %cfg.mask = 'no';
     ft_layoutplot(cfg, data_saturations)
-    print('saturated_chans','-dpng','-r200');
     
-    % Plot how much of the data is saturated
+    % Try to save the figure using the .confile name
+    try
+        print(['saturated_chans_' confile_short],'-dpng','-r200');
+    catch
+        print('saturated_chans','-dpng','-r200');    
+    end
+    
+    %% Plot how much of the data is saturated
     
     time_saturated = [];
     
@@ -160,16 +176,27 @@ if ~isempty(sat)
     time_saturated(length(time_saturated)+1) = length(sat.alltime)./...
         alldata.fsample;
     
-    figure; stem(time_saturated,'r','LineWidth',2);
+    figure; 
+    set(gcf,'Position',[100 100 900 800]);
+    stem(time_saturated,'r','LineWidth',2);
     set(gca,'xtick',[1:length(time_saturated)],'xticklabel',...
         vertcat(sat.label, 'TOTAL'))
     ylabel('Time Saturated (s)','FontSize',20);
     ax = gca;
-    ax.XAxis.FontSize = 10;
+    
+    if length(sat.label) > 50
+        ax.XAxis.FontSize = 7;
+    else
+        ax.XAxis.FontSize = 10;
+    end
+
     ax.YAxis.FontSize = 16;
     view(90,90)
-    print('time_saturated','-dpng','-r200');
-end
+    try
+        print(['time_saturated' confile_short],'-dpng','-r200');
+    catch
+        print('time_saturated','-dpng','-r200');    
+    end
 
 end
 
