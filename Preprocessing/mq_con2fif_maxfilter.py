@@ -6,6 +6,9 @@ Convert KIT data to FIF & perform tSSS
 
 import argparse
 parser = argparse.ArgumentParser(description='.con to .fif + Maxwell Filter')
+parser.add_argument('-bad','--names-list',nargs="*",
+help = """bad channels e.g. 'MEG 144' 'MEG 155'""",action="store",
+dest = "bad_chan",required=False)
 required = parser.add_argument_group('required arguments')
 required.add_argument('-con',help="path to .con file", action="store",
 dest = "confile",required=True)
@@ -41,6 +44,10 @@ print('Loading data...')
 # Load Raw
 raw = mne.io.read_raw_kit(confile, mrk=mrkfile, elp=elpfile,
 hsp=hspfile,verbose=True)
+
+## Check if any bad channels have been specified
+if args.bad_chan is not None:
+        raw.info['bads'] = args.bad_chan
 
 print('Perorming maxwell_filter (tSSS)')
 ## Perform tSSS
