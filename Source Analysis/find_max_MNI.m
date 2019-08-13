@@ -1,9 +1,15 @@
 function [MNI_coord_of_max] = find_max_MNI(sourceI,template_grid,neurosynth)
 
-try
-    d = find(sourceI.pow==max(sourceI.pow));
-catch
-    d = find(sourceI.avg.pow==max(sourceI.avg.pow));
+if isfield(sourceI,'stat')
+    d = find(sourceI.stat==max(sourceI.stat));
+else
+    
+    try
+        d = find(sourceI.pow==max(sourceI.pow));
+    catch
+        d = find(sourceI.avg.pow==max(sourceI.avg.pow));
+    end
+    
 end
 
 MNI_coord_of_max = template_grid.pos(d(1),:);
