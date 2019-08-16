@@ -17,22 +17,30 @@ function [trial_data_no_sats] = mq_remove_sat(trial_data,sat,...
 %%%%%%%%%%%%%%%%%%
 % - chans_remove        = List of channels to remove in the form:
 %                       {'AGXXX',...}
-%
+% - keep_chans          = Do you want to remove the bad channels from
+%                       output or keep intact (i.e. for data which has 
+%                       been interpolated to remove the sats
 %%%%%%%%%%%
 % Outputs:
 %%%%%%%%%%%
 % - trial_data_no_sats  = trial data with the saturated trials removed
 %
 % EXAMPLE: [data_clean] = mq_remove_sat(alldata2,sat,{'AG155','AG142',...
-%            'AG145'});
+%            'AG145'},'yes');
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if isempty(varargin)
     chans_remove = '';
+    keep_chans = 'no';
     disp('NOT removing any bad channels with lots of saturation');
 else
     chans_remove    = varargin{1};
+    keep_chans    = varargin{2};
+end
+
+if strcmp(keep_chans,'yes')
+    trial_data_spare = trial_data;
 end
 
 % If there are channels to remove...
@@ -100,7 +108,17 @@ full_trial_list = [1:1:length(trial_data.trial)];
 trials_to_keep = full_trial_list(~ismember(full_trial_list,...
     trial_list_with_sats));
 
-cfg = [];
-cfg.trials = trials_to_keep;
-trial_data_no_sats = ft_selectdata(cfg, trial_data);
+% If the user wants to remove 'bad' channels in the output data
+if strcmp(keep_chans,'no')
+    cfg = [];
+    cfg.trials = trials_to_keep;
+    trial_data_no_sats = ft_selectdata(cfg, trial_data);
+    
+% Else if the user wants to keep 'bad' channels in the output data
+elseif strcmp(keep_chans,'yes')
+    cfg = [];
+    cfg.trials = trials_to_keep;
+    trial_data_no_sats = ft_selectdata(cfg, trial_data_spare);
+end
+    
 end
