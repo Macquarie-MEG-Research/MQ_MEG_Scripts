@@ -43,7 +43,7 @@ function [head_movt,confound] = get_reTHM_data(dir_name,confile,grad_trans...
 %%%%%%%%%%%%%%%%%%%%%
 
 % Example function call:
-% get_reTHM_data(dir_name,confile,headshape_downsampled)
+% get_reTHM_data(dir_name,confile,headshape_downsampled,'',0.99)
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
