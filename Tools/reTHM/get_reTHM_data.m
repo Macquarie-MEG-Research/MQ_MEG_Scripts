@@ -1,5 +1,5 @@
 function [head_movt,confound] = get_reTHM_data(dir_name,confile,grad_trans...
-    ,path_to_headshape, bad_coil)
+    ,path_to_headshape, bad_coil, gof_value)
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % get_reTHM_data: function to read reTHM (head movement) data from a .con
@@ -16,10 +16,12 @@ function [head_movt,confound] = get_reTHM_data(dir_name,confile,grad_trans...
 % - grad_trans              = MEG sensors information read in with
 %                           ft_read_sens and realigned using 
 %                           MQ_MEG_Scripts tools
-% - path_to_headshape     = path to .hsp file
+% - path_to_headshape       = path to .hsp file
 % - bad_coil                = list of bad coils (up to length of 2). 
 %                           Enter as: {'LPAred','RPAyel','PFblue',...
 %                           'LPFwh','RPFblack'}
+% - gof_value               = goodness of fit threshold for rejecting 
+%                           reTHM data. Try 0.99 in the first instance.
 %
 %%%%%%%%%%%
 % Outputs:
@@ -86,38 +88,6 @@ else
     end
 end
 
-
-%% Calculate NaNs and correct
-for i = 1:size(head_movt.pos,2)
-    num_of_nans = sum(isnan(squeeze(head_movt.pos(:,i,1))));
-    perc_of_nans = ((length(head_movt.pos)-num_of_nans)...
-        ./length(head_movt.pos)).*100;
-    
-    % Show warning if over 10%... if not show actual percetnage
-    if 100-perc_of_nans > 10
-        fprintf('Percentage NaNs for %8s: %.3f BAD MARKER?\n',...
-            head_movt.label{i},100-perc_of_nans);
-        
-    else
-        fprintf('Percentage NaNs for %8s: %.3f\n',head_movt.label{i},...
-            100-perc_of_nans)
-    end
-end
-
-% This is a very very simple NaN correction - filling in with the previous
-% entry. If the first/last entry is missing the nearest available value is
-% used. We could make it more complicated.. but I guess this will do for
-% now.
-
-disp('Correcting NaNs');
-
-for i = 1:size(head_movt.pos,2)
-    for j = 1:size(head_movt.pos,3)
-        head_movt.pos(:,i,j) = fillmissing(head_movt.pos(:,i,j),...
-            'previous','EndValues','nearest');
-    end
-end
-
 %% Show goodness of fit
 
 disp('Calculating Goodness of Fit for the 5 markers');
@@ -145,6 +115,73 @@ else
 end
 
 print('GOF.png','-dpng','-r300');
+
+
+% Remove data contaminated by bad GOF
+[row,~] = find(head_movt.gof < gof_value);
+
+% Only return unique values
+row = unique(row);
+
+% If there are any bad GOF times replace the data with NaNs and replot
+if ~isempty(row)
+    
+    ft_warning('Replacing reTHM data with NaNs for times with bad gof values');
+    
+    for r = 1:length(row)
+        head_movt.pos(row(r),:,:) = NaN;
+        head_movt.gof(row(r),:,:) = NaN;
+    end
+    
+    figure;
+    
+    for i = 1:size(head_movt.pos,2)
+        plot(head_movt.time,head_movt.gof(:,i),mrk_colors(i),'LineWidth',3);
+        hold on;
+    end
+    
+    % Set colors
+    %set(gcf,'Color',[0.5,0.5,0.5]);
+    set(gca,'Color',[0.7,0.7,0.7]);
+    set(gcf, 'InvertHardcopy', 'off')
+    ylabel('Goodness of Fit (0-1)');
+    xlabel('Time (Sec)')
+    set(gca,'FontSize',20);
+    ylim([gof_value 1.0]);
+    print('GOF_corrected.png','-dpng','-r300');
+end
+
+%% Calculate NaNs and correct
+for i = 1:size(head_movt.pos,2)
+    num_of_nans = sum(isnan(squeeze(head_movt.pos(:,i,1))));
+    perc_of_nans = ((length(head_movt.pos)-num_of_nans)...
+        ./length(head_movt.pos)).*100;
+    
+    % Show warning if over 10%... if not show actual percetnage
+    if 100-perc_of_nans > 10
+        fprintf('Percentage NaNs for %8s: %.3f BAD MARKER?\n',...
+            head_movt.label{i},100-perc_of_nans);
+        ft_warning('BAD MARKER?');
+        pause(1.0);
+    else
+        fprintf('Percentage NaNs for %8s: %.3f\n',head_movt.label{i},...
+            100-perc_of_nans)
+    end
+end
+
+% This is a very very simple NaN correction - filling in with the previous
+% entry. If the first/last entry is missing the nearest available value is
+% used. We could make it more complicated.. but I guess this will do for
+% now.
+
+disp('Correcting NaNs');
+
+for i = 1:size(head_movt.pos,2)
+    for j = 1:size(head_movt.pos,3)
+        head_movt.pos(:,i,j) = fillmissing(head_movt.pos(:,i,j),...
+            'previous','EndValues','nearest');
+    end
+end
 
 %% Create figure to show how far participant moved across whole recording
 %  In relation to MEG sensors
