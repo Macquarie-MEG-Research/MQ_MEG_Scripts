@@ -94,13 +94,17 @@ if strcmp(bad_coil,'')
         meg2head_transm             = [[R T]; 0 0 0 1];%reorganise and make 4*4 transformation matrix
     % Otherwise use the original rot3dfit method
     else
-        [R,T,Yf,Err]                = rot3dfit(markers,shape.fid.pnt(4:end,:));%calc rotation transform
+        fids_2_use = shape.fid.pnt(4:end,:);
+        [R,T,Yf,Err]                = rot3dfit(markers,fids_2_use);%calc rotation transform
         meg2head_transm             = [[R;T]'; 0 0 0 1];%reorganise and make 4*4 transformation matrix
     end
        
     disp('Performing re-alignment');
     grad_trans                  = ft_transform_geometry_PFS_hacked(meg2head_transm,grad_con); %Use my hacked version of the ft function - accuracy checking removed not sure if this is good or not
     grad_trans.fid              = shape; %add in the head information
+    
+    markers_trans               = ft_warp_apply(meg2head_transm,markers);
+
     
     % Else if there is a bad marker
 else
@@ -132,6 +136,7 @@ else
         [R, T, err, dummy, info]    = icp(fids_2_use', markers','Minimize', 'point');
         meg2head_transm             = [[R T]; 0 0 0 1];%reorganise and make 4*4 transformation matrix
         grad_trans                  = ft_transform_geometry_PFS_hacked(meg2head_transm,grad_con); %Use my hacked version of the ft function - accuracy checking removed not sure if this is good or not
+        markers_trans               = ft_warp_apply(meg2head_transm,markers);
         
         % Now take out the bad coil from the shape variable to prevent bad
         % plotting - needs FIXING for 2 markers (note: Dec 18)
@@ -141,7 +146,8 @@ else
         [R,T,Yf,Err]                = rot3dfit(markers,fids_2_use);%calc rotation transform
         meg2head_transm             = [[R;T]'; 0 0 0 1];%reorganise and make 4*4 transformation matrix
         grad_trans                  = ft_transform_geometry_PFS_hacked(meg2head_transm,grad_con); %Use my hacked version of the ft function - accuracy checking removed not sure if this is good or not
-        
+        markers_trans               = ft_warp_apply(meg2head_transm,markers);
+
         % Now take out the bad coil from the shape variable to prevent bad
         % plotting
         shape.fid.pnt(badcoilpos+3,:) = [];
@@ -157,10 +163,25 @@ disp('Saving data');
 save shape shape
 save grad_trans grad_trans
 
+% Tell the user how far the distance between .mrk and .elp markers is
+try
+    distances = diag(pdist2(fids_2_use,markers_trans));
+    fprintf('Distance between .mrk and .elp after transforming:\n');
+    for coil = 1:length(markers_trans)
+        fprintf('%10s : %.4fmm\n',shape.fid.label{coil+3, 1},distances(coil));
+        if distances(coil) > 10
+            ft_warning('Coil distance over 10mm = BAD MARKER?')
+            pause(1.0);
+        end
+    end
+    
+catch
+    ft_warning('Cannot calculate distance between .mrk and .elp markers');
+end
 
 % Create figure to view relignment
 
-ori = [180, -90, 0,90]
+ori = [180, -90, 0,90];
 hfig = figure;
 
 for v = 1:length(ori)
