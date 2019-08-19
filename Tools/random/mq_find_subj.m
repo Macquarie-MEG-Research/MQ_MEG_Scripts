@@ -43,7 +43,15 @@ end
 get_column          = getfield(subj_info,info);
 
 % Get the info from the "row" and "column" specified
-info_out            = get_column{position_of_subject};
+
+if isa(get_column,'double')
+    info_out            = get_column(position_of_subject);
+elseif isa(get_column,'cell')
+    info_out            = get_column{position_of_subject};
+else
+    disp('NOT supported yet');
+end
+
 
 end
 
