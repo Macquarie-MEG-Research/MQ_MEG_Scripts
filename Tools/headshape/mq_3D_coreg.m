@@ -2,7 +2,7 @@ function mq_3D_coreg(dir_name,path_to_obj,scaling)
 cd(dir_name);
 
 % Load in data 
-head_surface = ft_read_headshape_hacked(path_to_obj);
+head_surface = ft_read_headshape(path_to_obj);
 head_surface = ft_convert_units(head_surface,'mm');
 
 head_surface.color = uint8(head_surface.color);
@@ -61,14 +61,15 @@ markers_from_headshape2 = markers_from_headshape;
         20,'vertexcolor',color_array);
     
 %% Downsample headshape    
-    
+disp('Downsampling headshape');    
 head_surface_bti.faces = head_surface_bti.tri;
 head_surface_bti.vertices = head_surface_bti.pos;
 V = reducepatch(head_surface_bti,0.05);
 
 head_surface_decimated = head_surface_bti;
+head_surface_decimated = rmfield(head_surface_bti,'tri');
 head_surface_decimated.pos = V.vertices;
-head_surface_decimated.tri = V.faces;
+%head_surface_decimated.tri = V.faces;
 head_surface_decimated = rmfield(head_surface_decimated,{'faces',...
     'vertices','color'});
 
@@ -80,16 +81,29 @@ if size(head_surface_decimated.pos,1) > 10000
     
     head_surface_decimated = head_surface_bti;
     head_surface_decimated.pos = V.vertices;
-    head_surface_decimated.tri = V.faces;
+    %head_surface_decimated.tri = V.faces;
     head_surface_decimated = rmfield(head_surface_decimated,{'faces',...
         'vertices','color'});
 end
 
-figure;ft_plot_mesh(head_surface_decimated); camlight;
-view([0,0]);
+disp('Removing points 2cm below nasion on the z-axis');
+points_below_nasion = find(head_surface_decimated.pos(:,3)<-20);
+
+head_surface_decimated.pos(points_below_nasion,:) = [];
+
+try
+    figure; ft_plot_mesh(head_surface_bti); alpha 0.3;
+    ft_plot_mesh(head_surface_decimated); camlight;
+    
+    view([0,0]);
+    
+catch
+    disp('could not plot');
+end
 
 %% Now we need to create a dummy .elp file to read into MEG160
 
+disp('Writing .elp file');
 elp = fopen('test.elp.elp', 'wt');
 
 fids_for_mesh2 = round((fids_for_mesh./1000),4);
@@ -140,6 +154,9 @@ fprintf(elp,'%.4f	%.4f	%.4f\n',markers_from_headshape3(5,1),...
 fclose(elp);
 
 %% Now we need to create a dummy .hsp file to read into MEG160
+
+disp('Writing .hsp file');
+
 hsp = fopen('test.hsp.hsp', 'wt');
 
 pos_dec = round((head_surface_decimated.pos./1000),4);
