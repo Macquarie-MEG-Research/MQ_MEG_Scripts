@@ -62,10 +62,31 @@ end
 % CD to right place
 cd(dir_name); fprintf('\nCDd to the right place\n');
 
-% Get Polhemus Points
-disp('Reading elp and hspfile');
-[shape]  = parsePolhemus(elpfile,hspfile);
+% Get Polhemus Points from .hsp and .elp files
+disp('Reading hspfile');
+headshape = ft_read_headshape(hspfile);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% This is the old version
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%[shape]  = parsePolhemus(elpfile,hspfile);
+%shape   = ft_convert_units(shape,'mm');
+
+disp('Reading elpfile');
+
+% Use readelp from EEGlab to get location of markers
+[~, elocnames, X, Y, Z] = readelp(elpfile);
+
+% Rearrange data in shape array
+shape = [];
+shape.pnt = headshape.pos;
+shape.fid.pnt = [X' Y' Z'];
+shape.fid.label = elocnames';
+shape.unit='m';
+
 shape   = ft_convert_units(shape,'mm');
+
+clear elocnames X Y Z
 
 % Read the grads from the con file
 disp('Reading Sensors');
