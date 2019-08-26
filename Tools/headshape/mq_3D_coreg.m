@@ -1,6 +1,14 @@
 function mq_3D_coreg(dir_name,path_to_obj,scaling)
 cd(dir_name);
 
+% If the input file is .zip --> UNZIP!
+if strcmp(path_to_obj(end-3:end),'.zip')
+    disp('Unzipping...');
+    unzip(path_to_obj,dir_name)
+    path_to_obj = [dir_name '/Model.obj']
+    
+end
+    
 % Load in data 
 head_surface = ft_read_headshape(path_to_obj);
 head_surface = ft_convert_units(head_surface,'mm');
@@ -104,6 +112,7 @@ end
 %% Now we need to create a dummy .elp file to read into MEG160
 
 disp('Writing .elp file');
+
 elp = fopen('test.elp.elp', 'wt');
 
 fids_for_mesh2 = round((fids_for_mesh./1000),4);
@@ -154,7 +163,6 @@ fprintf(elp,'%.4f	%.4f	%.4f\n',markers_from_headshape3(5,1),...
 fclose(elp);
 
 %% Now we need to create a dummy .hsp file to read into MEG160
-
 disp('Writing .hsp file');
 
 hsp = fopen('test.hsp.hsp', 'wt');
