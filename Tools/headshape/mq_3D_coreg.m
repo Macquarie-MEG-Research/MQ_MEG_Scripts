@@ -1,11 +1,82 @@
-function mq_3D_coreg(dir_name,path_to_obj,scaling)
+function mq_3D_coreg(varargin)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% mq_3D_coreg
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Mode 1: specify all options
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% - dir_name     = directory for saving
+% - path_to_obj  = full path to the .obj file
+% - scaling      = scale the coil location down by X% (e.g. 0.96 = 4%
+%                scaling down)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+% Mode 2: specify scaling
+%%%%%%%%%%%%%%%%%%%%%%%%%
+% - scaling      = scale the coil location down by X% (e.g. 0.96 = 4%
+%                scaling down)
+%
+%%%%%%%%%%%
+% Outputs:
+%%%%%%%%%%%
+%
+% - grad_trans              = sensors transformed to correct
+% - shape                   = headshape and fiducial information
+% - headshape_downsampled   = headshape downsampled to 100 points
+% - trans_matrix            = transformation matrix applied to headmodel
+%                           and sourcemodel
+% - sourcemodel3d           = sourcemodel warped to MNI space
+% - headmodel               = singleshell headmodel (10000 vertices)
+%
+%%%%%%%%%%%%%%%%%%%%%
+% Other Information:
+%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%% Check inputs
+% If user has no inputs --> open dialogue box so they can select the
+% relevent file (.obj or /zip). Scaling is set to 1 (i.e. no scaling)
+
+if length(varargin) == 0
+    scaling = 1;
+    [filename,dir_name] = uigetfile({'*'});
+    path_to_obj = [dir_name filename];
+    
+    % If user has one input --> open dialogue box so they can select the
+    % relevent file (.obj or /zip)
+elseif length(varargin) == 1
+    scaling = varargin{1};
+    [filename,dir_name] = uigetfile({'*'});
+    
+    path_to_obj = [dir_name filename];
+    
+    % If user has three inputs --> use these
+elseif length(varargin) == 3
+    dir_name    = varargin{1};
+    path_to_obj = varargin{2};
+    scaling     = varargin{1};
+    
+    % Check inputs:
+    % If dir_name doesn't end with / or \ throw up and error
+    if ismember(dir_name(end),['/','\']) == 0
+        error('!!! dir_name must end with / or \ !!!');
+    end
+    
+else
+    ft_error('Incorrect number of inputs specified');
+end
+
+%%
+% Cd to the dir_name
 cd(dir_name);
 
 % If the input file is .zip --> UNZIP!
 if strcmp(path_to_obj(end-3:end),'.zip')
     disp('Unzipping...');
     unzip(path_to_obj,dir_name)
-    path_to_obj = [dir_name '/Model.obj']
+    path_to_obj = [dir_name 'Model.obj'];
     
 end
     
