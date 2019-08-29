@@ -106,13 +106,7 @@ set(gcf, 'InvertHardcopy', 'off')
 ylabel('Goodness of Fit (0-1)');
 xlabel('Time (Sec)')
 set(gca,'FontSize',20);
-
-% If there is low goodness of fit change the axes
-if min(min(head_movt.gof(:,:))) > 0.98
-    ylim([0.98 1.0]);
-else
-     ylim([min(min(head_movt.gof(:,:))) 1.0]);
-end
+ylim([0.98 1.0]);
 
 print('GOF.png','-dpng','-r300');
 
