@@ -1,4 +1,5 @@
-function [headshape_downsampled] = downsample_headshape(path_to_headshape,varargin)
+function [headshape_downsampled] = downsample_headshape(path_to_headshape...
+    ,varargin)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % headshape_downsampled: a function to downsample headshape information for
@@ -15,8 +16,15 @@ function [headshape_downsampled] = downsample_headshape(path_to_headshape,vararg
 %%%%%%%%%%%
 %
 % - path_to_headshape     = path to .hsp file
+%
+%%%%%%%%%%%%%%%%%%
+% Variable Inputs:
+%%%%%%%%%%%%%%%%%%
+%
 % - include_facial_points = 'yes' or 'no' (OPTIONAL - will remove any 
 %                           facial info if set to 'no')
+% - remove_zlim           = 'no', 'yes' or number
+%
 %%%%%%%%%%%
 % Outputs:
 %%%%%%%%%%%
@@ -42,10 +50,21 @@ end
 
 % If not specified include the facial points
 if isempty(varargin)
-    include_facial_points = 'yes';
-    
+    include_facial_points   = 'yes';
+    remove_zlim             = 'no';
 else
     include_facial_points = varargin{1};
+    remove_zlim           = varargin{2};
+    
+    if strcmp(remove_zlim,'yes')
+        remove_zlim = 2.0;
+    elseif isnumeric(remove_zlim)
+        remove_zlim = remove_zlim;
+    else
+        ft_warning('NOT removing zlim. Please use a number e.g. 2.0');
+        remove_zlim = 'no';
+    end
+    
 end
 
 
@@ -63,7 +82,7 @@ headshape_orig = headshape;
 % Possibly different for child system?
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-count_facialpoints = find(headshape.pos(:,3)<3 & headshape.pos(:,1)>1);
+count_facialpoints = find(headshape.pos(:,3)<3 & headshape.pos(:,1)>7);
 if isempty(count_facialpoints)
     disp('CANNOT FIND ANY FACIAL POINTS - COREG BY ICP MAY BE INACCURATE');
 else
@@ -84,6 +103,28 @@ else
 end
 ft_plot_mesh(headshape.pos,'vertexcolor','k','vertexsize',10); hold on;
 view([90 0]);
+
+disp(remove_zlim);
+
+% if the user specified to remove points along the zlim
+if ~strcmp(remove_zlim,'no')
+    
+    % Also remove points Xcm above nasion
+    points_below_X = find(headshape.pos(:,3) < remove_zlim);
+    
+    if isempty(count_facialpoints)
+        disp('CANNOT FIND ANY POINTS LESS THAN the zlim specified');
+    else
+        
+        % Remove these points
+        headshape.pos(points_below_X,:) = [];
+        
+        % Plot the facial and head points in separate colours
+        figure;
+        ft_plot_mesh(headshape,'vertexcolor','r','vertexsize',10); hold on;
+        
+    end
+end
 
 % Create mesh out of headshape downsampled to x points specified in the
 % function call
@@ -153,7 +194,6 @@ view_angle = [-180, 0]
 figure;
 
 for angle = 1:length(view_angle)
-    
     subplot(1,2,angle)
     ft_plot_headshape(headshape,'vertexcolor','k','vertexsize',12) %plot headshape
     hold on;
