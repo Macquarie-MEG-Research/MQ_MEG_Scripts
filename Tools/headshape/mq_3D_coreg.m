@@ -84,10 +84,9 @@ end
 head_surface = ft_read_headshape(path_to_obj);
 head_surface = ft_convert_units(head_surface,'mm');
 
-head_surface.color = uint8(head_surface.color);
-
 % Mark fiducials on headsurface
 cfg = [];
+cfg.channel = {'Nasion','Left PA','Right PA'};
 cfg.method = 'headshape';
 fiducials = ft_electrodeplacement(cfg,head_surface);
 
@@ -121,6 +120,7 @@ print('FIDS','-dpng','-r200');
 
 % 
 cfg = [];
+cfg.channel = {'LPAred','RPAyel','PFblue','LPFwh','RPFblack'};
 cfg.method = 'headshape';
 markers_from_headshape = ft_electrodeplacement(cfg,head_surface_bti);
 

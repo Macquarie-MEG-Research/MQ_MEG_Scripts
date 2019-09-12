@@ -1,7 +1,11 @@
+function [vertex, faces, texture, textureIdx] = read_obj(filename)
+
+% Faster .obj reader for headshape information acquired using a structure
+% sensor
+
 % from http://boffinblogger.blogspot.com/2015/05/faster-obj-file-reading-in-matlab.html
 % modified output structure and added scan for texture and textureIdx to handle vt
-
-function [vertex, faces, texture, textureIdx] = read_obj(filename)
+% Modifications by Robert Oostenveld and Robert Seymour
 
 fid = fopen(filename);
 if fid<0
