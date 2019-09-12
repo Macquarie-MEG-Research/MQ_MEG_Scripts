@@ -67,6 +67,8 @@ else
     
 end
 
+disp(remove_zlim);
+
 
 % Get headshape
 headshape = ft_read_headshape(path_to_headshape);
@@ -112,7 +114,7 @@ if ~strcmp(remove_zlim,'no')
     % Also remove points Xcm above nasion
     points_below_X = find(headshape.pos(:,3) < remove_zlim);
     
-    if isempty(count_facialpoints)
+    if isempty(points_below_X)
         disp('CANNOT FIND ANY POINTS LESS THAN the zlim specified');
     else
         
