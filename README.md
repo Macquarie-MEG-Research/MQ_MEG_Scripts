@@ -1,4 +1,5 @@
 # Macquarie MEG Research Group Script Repository
+[![DOI](https://zenodo.org/badge/176198353.svg)](https://zenodo.org/badge/latestdoi/176198353)
 
 ### Public repository for various analysis scripts used for MEG processing and analysis. 
 
