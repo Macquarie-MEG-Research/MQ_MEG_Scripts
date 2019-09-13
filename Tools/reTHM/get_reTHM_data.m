@@ -78,7 +78,7 @@ if strcmp(bad_coil,'')
     
 else
     for coil = 1:length(bad_coil)
-        fprintf('Removing %s coil',bad_coil{coil});
+        fprintf('Removing %s coil\n',bad_coil{coil});
         find_bad_coil_pos = find(ismember(head_movt.label,bad_coil{coil}));
         
         head_movt.label(find_bad_coil_pos) = [];
@@ -247,27 +247,61 @@ print('movt_mrk_time.png','-dpng','-r300');
 % There is probably a more sreamlined way to do this... but I want to
 % follow the Fieldtrip tutorial as closely as I can...
 
-disp('Calculating rotation and translation...');
-disp('in relation to first marker measurement');
+fprintf(['Calculating rotation and translation in relation to first'...
+    ' marker measurement...\n']);
 
 % Load headshape + fiducial information
 fiducials_over_time = [];
 
+% If there are 5 good markers use rot3dfit to transform fiducials
+if length(head_movt.label) > 4
+    method_for_transform = 'rot3dfit';
+    disp('Using method: rot3dfit ... Please wait...');
+    % Otherwise use icp
+else
+    method_for_transform = 'icp';
+    disp('Using method: ICP ... Please wait...');
+end
+
+ft_progress('init', 'text', 'Please wait...')
+
+% for each marker measurement
 for i = 1:length(head_movt.pos)
     try
-    [R,T,Yf,Err]    = rot3dfit(squeeze(head_movt.pos(1,:,:)),...
-            squeeze(head_movt.pos(i,:,:)));%calc rotation transform
-    meg2head_transm = [[R;T]'; 0 0 0 1];%reorganise and make 4*4 transformation matrix
+        switch method_for_transform
+            
+            case 'rot3dfit'
+                % Display the progress of the function
+                ft_progress(i, 'Processed %d of %d reTHM measurements',i,...
+                    length(head_movt.pos));
                 
-    fiducials_over_time(i,:,:,:) = ft_warp_apply(meg2head_transm,...
-    headshape.fid.pos);
+                [R,T,Yf,Err]    = rot3dfit(squeeze(head_movt.pos(1,:,:)),...
+                    squeeze(head_movt.pos(i,:,:)));%calc rotation transform
+                meg2head_transm = [[R;T]'; 0 0 0 1];
+                %reorganise and make 4*4 transformation matrix
+                
+            case 'icp'
+                % Display the progress of the function
+                ft_progress(i, 'Processed %d of %d reTHM measurements',i,...
+                    length(head_movt.pos));
+    
+                [R, T, err, dummy, info]    = icp(squeeze(head_movt.pos(1,:,:))',...
+                    squeeze(head_movt.pos(i,:,:))',50,'Minimize', 'point');
+                meg2head_transm             = [[R T]; 0 0 0 1];
+        end
+        
+        fiducials_over_time(i,:,:,:) = ft_warp_apply(meg2head_transm,...
+            headshape.fid.pos);
+        
     catch
         fiducials_over_time(i,:,:,:) = nan(3);
     end
 end
- 
-% Use circumcenter function to determine the position and orientation of 
-% the circumcenter of the three fiducial markers 
+ft_progress('close');
+
+
+% Use circumcenter function to determine the position and orientation of
+% the circumcenter of the three fiducial markers
 
 [cc] = circumcenter(squeeze(fiducials_over_time(:,:,1))',...
     squeeze(fiducials_over_time(:,:,2))',...
