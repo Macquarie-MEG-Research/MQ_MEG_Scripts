@@ -57,6 +57,9 @@ if ~isempty(chans_remove)
     sat.label(pos_of_chans) = [];
     sat.time(pos_of_chans) = [];
     
+    % If there are still channels to remove...
+    if ~isempty(sat.label)
+    
     % Now find the overall times when the data is saturated 
     % without the specified channels!
     all_sat = zeros(length(sat.label),trial_data.sampleinfo(end,2));
@@ -69,6 +72,8 @@ if ~isempty(chans_remove)
     unique_all_sat(1) = [];
     
     sat.alltime = unique_all_sat';
+    
+    end
     
     % Now remove the channels from the trial_data
     cfg =[];
@@ -85,6 +90,11 @@ if ~isempty(chans_remove)
     trial_data = ft_selectdata(cfg,trial_data);
 end
 
+% Check if there are still saturated channels
+if isempty(sat.label)
+    trial_data_no_sats = trial_data;
+    return
+end
 
 % Now find which trials overlap with times when the data were saturated
 trial_list_with_sats = [];
