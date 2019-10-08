@@ -1,7 +1,5 @@
 # Preprocessing
 
-These
-
 ### Maxwell Filtering
 
 To reduce background environmental noise, you may wish to implement Maxwell filtering. Please see [this MNE-Python tutorial](https://mne.tools/dev/auto_tutorials/preprocessing/plot_60_maxwell_filtering_sss.html?highlight=maxwell_filter) for more information. 
@@ -18,3 +16,11 @@ If there was low-frequency noise present during your recording, certain MEG chan
 ``` 
  
 ### Loading Data into Fieldtrip
+
+### Filtering
+
+### ICA
+
+### Trial Definition
+
+### Removing "Bad" Trials
