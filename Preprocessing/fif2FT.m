@@ -23,24 +23,35 @@
 %
 %   alldata_tsss  =  data from the fif files, in a fieldtrip-compatible format
 %
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 % Example usage:
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
 %
-%   alldata_tsss = fif2FT('E:\Judy\MEG-data\A02-KW-3591\', '3591_KW_ME180_2019_09_28.con')
+%   alldata_tsss = fif2FT('E:\Judy\MEG-data\', '3591_KW_ME180_2019_09_28.con')
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function alldata_tsss = fif2FT(dir_name, file_name)
-    % remove the '.con' at the end of file_name
-    if strcmp(file_name(end-4:end), '.con')
-        file_name = file_name(1:end-5);   % '3591_KW_ME180_2019_09_28_B1-concat'; 
+    %% Checking input
+
+    % make sure the folder location is valid
+    if isempty(dir(dir_name))
+        fprintf('\nError: Directory does not exist. Please check the dir_name you specified.\n');
     end
     
+    % remove the '.con' at the end of file_name
+    if strcmp(file_name(end-3:end), '.con')
+        file_name = file_name(1:end-4);
+    end
+    
+    fullpath = fullfile(dir_name, file_name); % 'E:\Judy\MEG-data\3591_KW_ME180_2019_09_28';
+    
+    fprintf('\nLoading fif files and converting to FieldTrip format...\n\n');
+    
 
-    %% Read in the original data, to create the "alldata" structure
+    %% Read in the original data (i.e. con file), to create the "alldata" structure
 
-    rawfile = [dir_name file_name '.con'];            
+    rawfile = [fullpath '.con'];            
 
     cfg                      = [];
     cfg.trialfun             = 'ft_trialfun_general';
@@ -64,16 +75,16 @@ function alldata_tsss = fif2FT(dir_name, file_name)
     % so we need to join these together
 
     % check how many fif files there are
-    fif_files = dir([dir_name file_name '_raw_tsss*.fif']);
+    fif_files = dir([fullpath '_raw_tsss*.fif']);
     fif_files = {fif_files.name}; % extract the filenames
 
     % read in the first fif file
-    tsss = ft_read_data([dir_name file_name '_raw_tsss.fif']);
+    tsss = ft_read_data([fullpath '_raw_tsss.fif']);
     tmp = tsss(1:160, :); % only take the MEG channels (1-160)
 
     % Read in each subsequent fif file
     for i = 2:length(fif_files)
-        tsss = ft_read_data([dir_name file_name '_raw_tsss-' mat2str(i-1) '.fif']);
+        tsss = ft_read_data([fullpath '_raw_tsss-' mat2str(i-1) '.fif']);
         tmp = [tmp tsss(1:160, :)]; % append to the previous matrix
     end
 
@@ -92,4 +103,5 @@ function alldata_tsss = fif2FT(dir_name, file_name)
 
     ft_databrowser(cfg, alldata);       % before tSSS
     ft_databrowser(cfg, alldata_tsss);  % after tSSS
+    
 end
