@@ -5,16 +5,18 @@
 ## Citation
 
 If you use these scripts, please cite:
+
 [![DOI](https://zenodo.org/badge/176198353.svg)](https://zenodo.org/badge/latestdoi/176198353)
 ```matlab
-Robert Seymour. (2019, September 13). Macquarie-MEG-Research/MQ_MEG_Scripts: v0.1 for Zenodo (Version v0.1zenodo). Zenodo. http://doi.org/10.5281/zenodo.3406897
+Robert Seymour. (2019, September 13). 
+Macquarie-MEG-Research/MQ_MEG_Scripts: v0.1 for Zenodo (Version v0.1zenodo). 
+Zenodo. 
+http://doi.org/10.5281/zenodo.3406897
 ```
 
 ## Lab Information
 
-For more information about the lab please visit the website ([LINK](https://www.mq.edu.au/research/research-centres-groups-and-facilities/healthy-people/facilities/meg))
-
-Warning: use these scripts at your own risk - some have not been fully tested!
+For more information about the lab please visit the website ([LINK](https://www.mq.edu.au/research/research-centres-groups-and-facilities/healthy-people/facilities/meg)). Warning: use these scripts at your own risk - some have not been fully tested!
 
 ## Tutorials (work in progress)
 
