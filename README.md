@@ -7,7 +7,7 @@
 If you use these scripts, please cite:
 
 [![DOI](https://zenodo.org/badge/176198353.svg)](https://zenodo.org/badge/latestdoi/176198353)
-```matlab
+```markdown
 Robert Seymour. (2019, September 13). 
 Macquarie-MEG-Research/MQ_MEG_Scripts: v0.1 for Zenodo (Version v0.1zenodo). 
 Zenodo. 
