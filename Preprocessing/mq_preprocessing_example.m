@@ -2,8 +2,6 @@
 %
 % mq_preprocessing_example.m 
 %
-%
-%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%
@@ -45,7 +43,7 @@ addpath(genpath(path_to_MEMES));
 % 3. Specifiy Subject ID
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-subject = '3356';
+subject = '3566';
 
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -109,8 +107,76 @@ save headshape_downsampled headshape_downsampled;
 
 print('grad_trans','-dpng','-r200');
 
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 9. Read in raw MEG data & apply filters
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+disp('Running Preprocessing Script for Project ME176 - Alien Task');
 
+% CD to correct directory
+cd(dir_name);
+
+% Epoch the whole dataset into one continous dataset and apply
+% the appropriate filters
+cfg = [];
+cfg.headerfile = confile;
+cfg.datafile = confile;
+cfg.trialdef.triallength = Inf;
+cfg.trialdef.ntrials = 1;
+cfg = ft_definetrial(cfg)
+
+cfg.continuous = 'yes';
+alldata = ft_preprocessing(cfg);
+
+% Band-pass filter between 0.5-250Hz to help visualisation
+cfg.continuous = 'yes';
+cfg.bpfilter = 'yes';
+cfg.bpfreq = [0.5 250];
+alldata = ft_preprocessing(cfg);
+
+% Deal with 50Hz line noise using a bandstop filter
+cfg = [];
+cfg.bsfilter = 'yes';
+cfg.bsfreq = [49.5 50.5];
+alldata = ft_preprocessing(cfg,alldata);
+
+% Deal with 100Hz line noise using a bandstop filter
+cfg = [];
+cfg.bsfilter = 'yes';
+cfg.bsfreq = [99.5 100.5];
+alldata = ft_preprocessing(cfg,alldata);
+
+% Create layout file for later and save
+cfg             = [];
+cfg.grad        = alldata.grad;
+lay             = ft_prepare_layout(cfg, alldata);
+save lay lay
+
+% Cut out MEG channels
+cfg = [];
+cfg.channel = alldata.label(1:160);
+alldata = ft_selectdata(cfg,alldata);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 10. Epoch the data into trials
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+cfg = [];
+cfg.dataset                 = confile;
+cfg.continuous              = 'yes';
+cfg.trialdef.prestim        = 2.0;         % pre-stimulus interval
+cfg.trialdef.poststim       = 3.0;        % post-stimulus interval
+cfg.trialfun                = 'mytrialfun_new_alien';
+data_raw                    = ft_definetrial(cfg);
+
+% Redefines the filtered data
+cfg = [];
+data = ft_redefinetrial(data_raw,alldata);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 11. Epoch the data into trials
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 
