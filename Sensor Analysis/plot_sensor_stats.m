@@ -9,7 +9,7 @@ function plot_sensor_stats(dir_name,stat, alpha, lay, x_lims, save_to_file)
 %%%%%%%%%%%
 %
 % - dir_name    = directory for saving the results
-% - stats       = output from ft_timelockstatistics
+% - stat       = output from ft_timelockstatistics
 % - alpha       = alpha-level
 % - lay         = layout generated from ft_preparelayout
 % - x_lims      = x-limit of your graph (i.e. which times do you want to
