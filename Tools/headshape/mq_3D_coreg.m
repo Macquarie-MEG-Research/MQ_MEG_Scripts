@@ -1,94 +1,86 @@
-function mq_3D_coreg(varargin)
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function mq_3D_coreg(cfg)
+%%%%%%%%%%%%%%%
 % mq_3D_coreg
+%%%%%%%%%%%%%%%
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Mode 1: specify all options
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% - dir_name     = directory for saving
-% - path_to_obj  = full path to the .obj file
-% - scaling      = scale the coil location down by X% (e.g. 0.96 = 4%
-%                scaling down)
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%
-% Mode 2: specify scaling
-%%%%%%%%%%%%%%%%%%%%%%%%%
-% - scaling      = scale the coil location down by X% (e.g. 0.96 = 4%
-%                scaling down)
+%%%%%%%%%%%%%%%
+% cfg options
+%%%%%%%%%%%%%%%
+% - cfg.dir_name         = directory for saving
+% - cfg.path_to_obj      = full path to the .obj or .zip file
+% - cfg.scaling          = scale the coil location down by X% (e.g. 0.96 = 4%
+%                        scaling down)
+% - cfg.subject_number   = subject number for MEG (e.g. '1234');
+% - cfg.subject_initials = subject initials (e.g. 'RS')
+% - cfg.project_number   = MEG project nuber (e.g. '123')
 %
 %%%%%%%%%%%
 % Outputs:
 %%%%%%%%%%%
+% XXXX_XX_MEXXX_yyyy_mm_dd.elp.elp   = .elp file
+% XXXX_XX_MEXXX_yyyy_mm_dd.hsp.hsp   = .hsp file
 %
-% - grad_trans              = sensors transformed to correct
-% - shape                   = headshape and fiducial information
-% - headshape_downsampled   = headshape downsampled to 100 points
-% - trans_matrix            = transformation matrix applied to headmodel
-%                           and sourcemodel
-% - sourcemodel3d           = sourcemodel warped to MNI space
-% - headmodel               = singleshell headmodel (10000 vertices)
+%%%%%%%%%%%
+% Other:
+%%%%%%%%%%%
+% If cfg.dir_name or cfg.path_to_obj is not specified, a GUI is presented
+% for the 
 %
-%%%%%%%%%%%%%%%%%%%%%
-% Other Information:
-%%%%%%%%%%%%%%%%%%%%%
-
-
 
 %% Check inputs
-% If user has no inputs --> open dialogue box so they can select the
-% relevent file (.obj or /zip). Scaling is set to 1 (i.e. no scaling)
 
-if length(varargin) == 0
-    scaling = 1;
+% Get function cfg
+dir_name        = ft_getopt(cfg,'dir_name',[]);
+scaling         = ft_getopt(cfg,'scaling',1);
+path_to_obj     = ft_getopt(cfg,'path_to_obj',[]);
+subject_number         = ft_getopt(cfg,'subject_number','XXXX');
+subject_initials         = ft_getopt(cfg,'subject_initials','XX');
+project_number  = ft_getopt(cfg,'project_number','XXX');
+
+% If no dir_name or path_to_obj specified let the user select with GUI
+if isempty(dir_name) || isempty(path_to_obj)
     [filename,dir_name] = uigetfile({'*'});
     path_to_obj = [dir_name filename];
-    
-    % If user has one input --> open dialogue box so they can select the
-    % relevent file (.obj or /zip)
-elseif length(varargin) == 1
-    scaling = varargin{1};
-    [filename,dir_name] = uigetfile({'*'});
-    
-    path_to_obj = [dir_name filename];
-    
-    % If user has three inputs --> use these
-elseif length(varargin) == 3
-    dir_name    = varargin{1};
-    path_to_obj = varargin{2};
-    scaling     = varargin{1};
-    
-    % Check inputs:
-    % If dir_name doesn't end with / or \ throw up and error
-    if ismember(dir_name(end),['/','\']) == 0
-        error('!!! dir_name must end with / or \ !!!');
-    end
-    
-else
-    ft_error('Incorrect number of inputs specified');
+end
+
+
+% Check input:
+% If dir_name doesn't end with / or \ throw up and error
+if ismember(dir_name(end),['/','\']) == 0
+    error('!!! cfg.dir_name must end with / or \ !!!');
 end
 
 %%
 % Cd to the dir_name
 cd(dir_name);
 
-% If the input file is .zip --> UNZIP!
+%% Deal with .zips (If the input file is .zip --> UNZIP!)
 if strcmp(path_to_obj(end-3:end),'.zip')
     disp('Unzipping...');
     unzip(path_to_obj,dir_name)
     path_to_obj = [dir_name 'Model.obj'];
-    
 end
-    
-% Load in data 
+
+%% What should the .output files be called?
+try
+file_out_name = [subject_number '_' subject_initials '_ME' ...
+    project_number '_' datestr(now,'yyyy_mm_dd')];
+catch
+    file_out_name = 'XXXX';
+end
+
+%% Start of function proper
+% Load in data
+disp('Loading .obj file. This takes around 10 seconds');
 head_surface = ft_read_headshape(path_to_obj);
+%head_surface.color = head_surface.color./255;
 head_surface = ft_convert_units(head_surface,'mm');
 
 % Mark fiducials on headsurface
 cfg = [];
 cfg.channel = {'Nasion','Left PA','Right PA'};
 cfg.method = 'headshape';
-fiducials = ft_electrodeplacement(cfg,head_surface);
+fiducials = ft_electrodeplacement_RS(cfg,head_surface);
 
 % Convert to BTI space
 cfg = [];
@@ -105,7 +97,8 @@ transform_bti = ft_headcoordinates(cfg.fiducial.nas, ...
 
 fids_for_mesh = ft_warp_apply(transform_bti,fiducials.elecpos);
 
-% Plot figure 
+% Plot figure
+try
 figure;
 set(gcf,'Position',[100 100 1000 600]);
 subplot(1,2,1);
@@ -116,40 +109,67 @@ subplot(1,2,2);
 ft_plot_axes(head_surface_bti);
 ft_plot_mesh(head_surface_bti);
 view([90,0]);
-print('FIDS','-dpng','-r200');
+print([file_out_name '_FIDS' ],'-dpng','-r200');
+catch
+    disp('Could not plot')
+end
 
-% 
+%
 cfg = [];
 cfg.channel = {'LPAred','RPAyel','PFblue','LPFwh','RPFblack'};
 cfg.method = 'headshape';
-markers_from_headshape = ft_electrodeplacement(cfg,head_surface_bti);
+markers_from_headshape = ft_electrodeplacement_RS(cfg,head_surface_bti);
 
 % Shrink by 5% to compensate for markers
 markers_from_headshape2 = markers_from_headshape;
-    markers_from_headshape2.chanpos = ft_warp_apply([scaling 0 0 0;...
-        0 scaling 0 0; 0 0 scaling 0; 0 0 0 1],...
-        markers_from_headshape2.chanpos);
-   
-    % Make figure
-    color_array = [1 0 0; 1 1 0; 0 0 1; 0 1 1; 0 0 0];
-    
-    %Make figure;
+markers_from_headshape2.chanpos = ft_warp_apply([scaling 0 0 0;...
+    0 scaling 0 0; 0 0 scaling 0; 0 0 0 1],...
+    markers_from_headshape2.chanpos);
+
+% Make figure
+color_array = [1 0 0; 1 1 0; 0 0 1; 0 1 1; 0 0 0];
+
+%Make figure;
+try
     figure;
-    ft_plot_mesh(head_surface_bti,'facealpha',0.6);
-    ft_plot_mesh(markers_from_headshape2.chanpos,'vertexsize',...
-        20,'vertexcolor',color_array);
+    views = [0 0; 90 90];
     
-%% Downsample headshape    
-disp('Downsampling headshape');    
+    set(gcf, 'Units', 'Normalized', 'OuterPosition', [0, 0.04, 1, 0.96]);
+    
+    for i = 1:2
+        subplot(1,2,i)
+        ft_plot_mesh(head_surface_bti,'facealpha',0.4);
+        ft_plot_mesh(markers_from_headshape2.chanpos,'vertexsize',...
+            20,'vertexcolor',color_array);
+        view(views(i,:));
+    end
+    print([file_out_name '_coil_locations'],'-dpng','-r200');
+catch
+    disp('Could not display figure');
+end
+
+%% Downsample headshape
+
+disp('Downsampling headshape');
 head_surface_bti.faces = head_surface_bti.tri;
 head_surface_bti.vertices = head_surface_bti.pos;
 V = reducepatch(head_surface_bti,0.05);
+T = reducepatch(head_surface_bti,0.1);
 
+% For non-facial points
 head_surface_decimated = head_surface_bti;
 head_surface_decimated = rmfield(head_surface_bti,'tri');
 head_surface_decimated.pos = V.vertices;
 %head_surface_decimated.tri = V.faces;
 head_surface_decimated = rmfield(head_surface_decimated,{'faces',...
+    'vertices','color'});
+
+% For facial points
+head_surface_decimated2 = head_surface_bti;
+head_surface_decimated2 = rmfield(head_surface_bti,'tri');
+head_surface_decimated2.pos = T.vertices;
+%head_surface_decimated.tri = V.faces;
+head_surface_decimated2 = rmfield(head_surface_decimated2,{'faces',...
     'vertices','color'});
 
 if size(head_surface_decimated.pos,1) > 10000
@@ -165,26 +185,88 @@ if size(head_surface_decimated.pos,1) > 10000
         'vertices','color'});
 end
 
-disp('Removing points 2cm below nasion on the z-axis');
-points_below_nasion = find(head_surface_decimated.pos(:,3)<-20);
+%% Deal with facial points
+count_facialpoints = find(head_surface_decimated2.pos(:,3)<20 ...
+    & head_surface_decimated2.pos(:,3)>-80 ...
+    & head_surface_decimated2.pos(:,1)>20 ...
+    & head_surface_decimated2.pos(:,2)<70 ...
+    & head_surface_decimated2.pos(:,2)>-70);
+if isempty(count_facialpoints)
+    disp('CANNOT FIND ANY FACIAL POINTS - COREG BY ICP MAY BE INACCURATE');
+else
+    facialpoints = head_surface_decimated2.pos(count_facialpoints,:,:);
+    rrr = 1:4:length(facialpoints);
+    facialpoints = facialpoints(rrr,:); clear rrr;
+end
+
+% figure;
+% ft_plot_mesh(facialpoints,'vertexcolor','r','vertexsize',10); hold on;
+% ft_plot_mesh(head_surface_bti); alpha 0.3; camlight;
+% title({'Facial Points are'; 'Marked in Red'});
+% view([90 0]);
+
+% Remove facial points for now
+head_surface_decimated2.pos(count_facialpoints,:) = [];
+hs_spare = head_surface_decimated2;
+
+%% Remove Points 2cm above the nasion
+disp('Removing points 2cm above nasion on the z-axis');
+
+points_below_nasion = find(head_surface_decimated.pos(:,3)< 20);
 
 head_surface_decimated.pos(points_below_nasion,:) = [];
+hs_spare2 = head_surface_decimated;
 
+%% Add the facial points back in
+if ~isempty(facialpoints)
+    try
+        % Add the facial info back in
+        % Only include points facial points 2cm below nasion
+        head_surface_decimated.pos = vertcat(head_surface_decimated.pos,...
+            facialpoints);
+    catch
+        disp('Cannot add facial info back into headshape');
+    end
+else
+    disp('Not adding facial points back into headshape');
+end
+
+%% Create a Figure to Show the Downsampling Process
+% Plot the facial and head points in separate colours
 try
-    figure; ft_plot_mesh(head_surface_bti); alpha 0.3;
-    ft_plot_mesh(head_surface_decimated); camlight;
+    figure;
+    set(gcf, 'Units', 'Normalized', 'OuterPosition', [0, 0.04, 1, 0.96]);
     
+    subplot(2,2,1);
+    ft_plot_mesh(facialpoints,'vertexcolor','r','vertexsize',10); hold on;
+    ft_plot_mesh(head_surface_bti); alpha 0.3; camlight;
+    title({'Facial Points are'; 'Marked in Red'});
+    view([90 0]);
+    subplot(2,2,2);
+    ft_plot_mesh(head_surface_bti); alpha 0.3;
+    ft_plot_mesh(hs_spare2,'vertexcolor','b','vertexsize',10); camlight;
+    title({'Selected Scalp'; 'Points'});
     view([0,0]);
-    
+    subplot(2,2,3);
+    ft_plot_mesh(head_surface_decimated);
+    ft_plot_mesh(head_surface_bti); alpha 0.3; camlight;    
+    title({'Final Mesh'});
+    view([0,0]);
+    subplot(2,2,4);
+    ft_plot_mesh(head_surface_decimated);
+    ft_plot_mesh(head_surface_bti); alpha 0.3; camlight;
+    title({'Final Mesh'});
+    view([90,0]);
+    print([file_out_name '_downsampled'],'-dpng','-r200');
 catch
-    disp('could not plot');
+    disp('Could not plot');
 end
 
 %% Now we need to create a dummy .elp file to read into MEG160
 
 disp('Writing .elp file');
 
-elp = fopen('test.elp.elp', 'wt');
+elp = fopen([file_out_name '.elp.elp'], 'wt');
 
 fids_for_mesh2 = round((fids_for_mesh./1000),4);
 markers_from_headshape3 = round((markers_from_headshape2.chanpos./1000),4);
@@ -236,7 +318,7 @@ fclose(elp);
 %% Now we need to create a dummy .hsp file to read into MEG160
 disp('Writing .hsp file');
 
-hsp = fopen('test.hsp.hsp', 'wt');
+hsp = fopen([file_out_name '.hsp.hsp'], 'wt');
 
 pos_dec = round((head_surface_decimated.pos./1000),4);
 
