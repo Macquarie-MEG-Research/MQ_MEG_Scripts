@@ -23,8 +23,10 @@ function [headshape_downsampled] = downsample_headshape(path_to_headshape...
 %
 % - include_facial_points = 'yes' or 'no' (OPTIONAL - will remove any 
 %                           facial info if set to 'no')
-% - remove_zlim           = 'no', 'yes' or number
-%
+% - remove_zlim           = 'no', 'yes' or number (remove points which lie 
+%                           Xcm above nasion on the z-axis
+% - remove_below_nasion   = remove points which lie Xcm below nasion on the
+%                           z-axis
 %%%%%%%%%%%
 % Outputs:
 %%%%%%%%%%%
@@ -52,10 +54,13 @@ end
 if isempty(varargin)
     include_facial_points   = 'yes';
     remove_zlim             = 'no';
+    remove_below_nasion     = 2;
 else
     include_facial_points = varargin{1};
     remove_zlim           = varargin{2};
+    remove_below_nasion   = varargin{3};
     
+    % If user specified 'yes' convert to default value
     if strcmp(remove_zlim,'yes')
         remove_zlim = 2.0;
     elseif isnumeric(remove_zlim)
@@ -65,10 +70,15 @@ else
         remove_zlim = 'no';
     end
     
+    % If user specified 'no' make remove_below_nasion = 0
+    if strcmp(remove_below_nasion,'no')
+        remove_below_nasion = 0;
+    
+    % If user specified 'yes' make remove_below_nasion = 2
+    elseif strcmp(remove_below_nasion,'yes')
+        remove_below_nasion = 2;
+    end
 end
-
-disp(remove_zlim);
-
 
 % Get headshape
 headshape = ft_read_headshape(path_to_headshape);
@@ -106,8 +116,6 @@ end
 ft_plot_mesh(headshape.pos,'vertexcolor','k','vertexsize',10); hold on;
 view([90 0]);
 
-disp(remove_zlim);
-
 % if the user specified to remove points along the zlim
 if ~strcmp(remove_zlim,'no')
     
@@ -138,7 +146,6 @@ mesh = ft_prepare_mesh(cfg, headshape);
 
 %
 [decimated_headshape] = decimate_headshape(headshape, 'gridaverage');
-
 
 % Create figure for quality checking
 figure; subplot(2,2,1);ft_plot_mesh(mesh,'facecolor','k',...
@@ -178,7 +185,7 @@ if strcmp(include_facial_points,'yes')
         % Add the facial info back in
         % Only include points facial points 2cm below nasion
         headshape.pos = vertcat(headshape.pos,...
-            facialpoints(find(facialpoints(:,3) > -2),:));
+            facialpoints(find(facialpoints(:,3) > -remove_below_nasion),:));
     catch
         disp('Cannot add facial info back into headshape');
     end
