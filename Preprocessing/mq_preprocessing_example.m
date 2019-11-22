@@ -90,7 +90,7 @@ save sat sat
 % 7. Downsample Headshape
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-headshape_downsampled = downsample_headshape(hspfile,'yes',2);
+headshape_downsampled = downsample_headshape(hspfile,'yes',0);
 figure; ft_plot_headshape(headshape_downsampled);
 
 % Save
@@ -166,21 +166,95 @@ cfg = [];
 cfg.dataset                 = confile;
 cfg.continuous              = 'yes';
 cfg.trialdef.prestim        = 2.0;         % pre-stimulus interval
-cfg.trialdef.poststim       = 3.0;        % post-stimulus interval
-cfg.trialfun                = 'mytrialfun_new_alien';
+cfg.trialdef.poststim       = 2.0;        % post-stimulus interval
+cfg.trialfun                = 'mytrialfun_MQ_grating';
 data_raw                    = ft_definetrial(cfg);
 
 % Redefines the filtered data
 cfg = [];
 data = ft_redefinetrial(data_raw,alldata);
 
+%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 11. Epoch the data into trials
+% 11. Visually Inspect data for "bad" trials
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+cfg                 = [];
+cfg.channel         = {'MEG','-AG001','-AG002','-AG068'};
+cfg.colorgroups     = 'allblack';
+cfg.viewmode        = 'vertical';
+cfg.plotevents      = 'no'; 
+ft_databrowser(cfg,data)
+
+% Load the summary again so you can manually remove any bad trials
+cfg             = [];
+cfg.method      = 'summary';
+cfg.keepchannel = 'yes';
+grating         = ft_rejectvisual(cfg, data);
+clear data
+
+%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 12. Perform ICA & Remove ECG/EOG artefacts
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Downsample Data
+grating_orig    = grating; %save the original CLEAN data for later use 
+cfg             = []; 
+cfg.resamplefs  = 150; %downsample frequency 
+cfg.detrend     = 'no'; 
+disp('Downsampling data');
+grating            = ft_resampledata(cfg, grating_orig);
 
+% Run ICA
+disp('About to run ICA using the Runica method')
+cfg                 = [];
+cfg.method          = 'fastica';
+cfg.numcomponent    = 50;
+cfg.feedback        = 'textbar';
+comp                = ft_componentanalysis(cfg, grating);
 
+% Display Components - change layout as needed
+cfg             = []; 
+cfg.compscale   = 'local';
+cfg.viewmode    = 'component'; 
+cfg.layout      = lay;
+cfg.position    = [1 1 800 700];
+cfg.ylim        = [ -2.8015e-11  5.7606e-11 ];
+cfg.blocksize   = 4;
+ft_databrowser(cfg, comp);
 
+ft_hastoolbox('brewermap',1);
+colormap123     = colormap(flipud(brewermap(64,'RdBu')));
 
+cfg             = [];
+cfg.layout      = lay;
+cfg.blocksize   = 4;
+cfg.zlim        = 'maxabs';
+cfg.colormap    = colormap123;
+[rej_comp]      = ft_icabrowser(cfg, comp);
+
+% Decompose the original data as it was prior to downsampling 
+disp('Decomposing the original data as it was prior to downsampling...');
+cfg           = [];
+cfg.unmixing  = comp.unmixing;
+cfg.topolabel = comp.topolabel;
+comp_orig     = ft_componentanalysis(cfg, grating_orig);
+
+%% The original data can now be reconstructed, excluding specified components
+% This asks the user to specify the components to be removed
+disp('Enter components in the form [1 2 3]')
+comp2remove     = input('Which components would you like to remove?\n');
+cfg             = [];
+cfg.component   = [comp2remove]; %these are the components to be removed
+data_clean      = ft_rejectcomponent(cfg, comp_orig,grating_orig);
+
+%% Plot the Clean Data
+cfg = [];
+cfg.channel         = {'MEG','-AG001','-AG002','-AG068'};
+cfg.colorgroups     = 'allblack';
+cfg.viewmode        = 'vertical';
+cfg.plotevents      = 'no'; 
+ft_databrowser(cfg,data_clean);
 
 
 
