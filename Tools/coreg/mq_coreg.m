@@ -157,7 +157,8 @@ c = datestr(clock); %time and date
 figure;
 ft_plot_mesh(mesh_spare,'facecolor',[238,206,179]./255,'EdgeColor','none','facealpha',0.8); hold on;
 camlight; lighting phong; camlight left; camlight right; material dull; hold on;
-ft_plot_headshape(headshape_downsampled); title(sprintf('%s.   Error of ICP fit = %d' , c, err(end)));
+ft_plot_headshape(headshape_downsampled,'vertexsize',20); title(sprintf('%s.   Error of ICP fit = %d' , c, err(end)));
+view([90 0]);
 clear c; print('ICP_quality','-dpng');
 
 
@@ -169,6 +170,7 @@ ft_determine_coordsys(mri_realigned2, 'interactive', 'no');
 hold on; % add the subsequent objects to the figure
 drawnow; % workaround to prevent some MATLAB versions (2012b and 2014b) from crashing
 ft_plot_headshape(headshape_downsampled);
+view([180 0]);
 
 %% Segment
 disp('Segmenting the brain');
