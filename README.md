@@ -21,9 +21,11 @@ For more information about the lab please visit the website ([LINK](https://www.
 ## Tutorials (work in progress)
 
 - **[Preprocessing](https://macquarie-meg-research.github.io/MQ_MEG_Scripts/docs/mq_preprocessing_example.html)**
-- Sensor-Level Analysis (to follow)
+- Event-Related Fields (to follow)
+- Time-Frequency Analysis (to follow)
 - MEG-MRI Coregistration (to follow)
-- Source Analysis
+- Source Analysis with Beamformers (to follow)
+- Working with MEG Data from 125-Channel Child Scanner (to follow)
 
 ## Contributing
 
