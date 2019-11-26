@@ -30,19 +30,18 @@ function mq_3D_coreg(cfg)
 %% Check inputs
 
 % Get function cfg
-dir_name        = ft_getopt(cfg,'dir_name',[]);
-scaling         = ft_getopt(cfg,'scaling',1);
-path_to_obj     = ft_getopt(cfg,'path_to_obj',[]);
-subject_number         = ft_getopt(cfg,'subject_number','XXXX');
-subject_initials         = ft_getopt(cfg,'subject_initials','XX');
-project_number  = ft_getopt(cfg,'project_number','XXX');
+dir_name            = ft_getopt(cfg,'dir_name',[]);
+scaling             = ft_getopt(cfg,'scaling',1);
+path_to_obj         = ft_getopt(cfg,'path_to_obj',[]);
+subject_number      = ft_getopt(cfg,'subject_number','XXXX');
+subject_initials    = ft_getopt(cfg,'subject_initials','XX');
+project_number      = ft_getopt(cfg,'project_number','XXX');
 
 % If no dir_name or path_to_obj specified let the user select with GUI
 if isempty(dir_name) || isempty(path_to_obj)
     [filename,dir_name] = uigetfile({'*'});
     path_to_obj = [dir_name filename];
 end
-
 
 % Check input:
 % If dir_name doesn't end with / or \ throw up and error
@@ -154,7 +153,7 @@ disp('Downsampling headshape');
 head_surface_bti.faces = head_surface_bti.tri;
 head_surface_bti.vertices = head_surface_bti.pos;
 V = reducepatch(head_surface_bti,0.05);
-T = reducepatch(head_surface_bti,0.1);
+T = reducepatch(head_surface_bti,0.2);
 
 % For non-facial points
 head_surface_decimated = head_surface_bti;
@@ -212,7 +211,7 @@ hs_spare = head_surface_decimated2;
 %% Remove Points 2cm above the nasion
 disp('Removing points 2cm above nasion on the z-axis');
 
-points_below_nasion = find(head_surface_decimated.pos(:,3)< 20);
+points_below_nasion = head_surface_decimated.pos(:,3)< 20;
 
 head_surface_decimated.pos(points_below_nasion,:) = [];
 hs_spare2 = head_surface_decimated;
