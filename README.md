@@ -22,7 +22,7 @@ For more information about the lab please visit the website ([LINK](https://www.
 
 For a tutorial on how to use the *NEW* stucture sensor for Head Position Indication and MEG-MRI coregistration please see this [Google Doc](https://docs.google.com/document/d/1X0Zwd958qo37L4HHoe1UL_K_kgUm_4xULtEzGmpH_nY/edit?usp=sharing)
 
-![kermit](/docs/kermit_ipad.png)
+![kermit](/docs/kermet_ipad.png)
 
 ## Tutorials (work in progress)
 
