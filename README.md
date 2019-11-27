@@ -1,6 +1,6 @@
 # A Repository for Analysis Tools from the Macquarie MEG Research Group
 
-![MEG_banner_Paul-wright.gif](MEG_banner_Paul-wright.gif)
+![MEG_banner_Paul-wright.gif](/docs/MEG_banner_Paul-wright.gif)
 
 ## Citation
 
@@ -17,6 +17,12 @@ http://doi.org/10.5281/zenodo.3406897
 ## Lab Information
 
 For more information about the lab please visit the website ([LINK](https://www.mq.edu.au/research/research-centres-groups-and-facilities/healthy-people/facilities/meg)). Warning: use these scripts at your own risk - some have not been fully tested!
+
+## Structure Sensor
+
+For a tutorial on how to use the *NEW* stucture sensor for Head Position Indication and MEG-MRI coregistration please see this [Google Doc](https://docs.google.com/document/d/1X0Zwd958qo37L4HHoe1UL_K_kgUm_4xULtEzGmpH_nY/edit?usp=sharing)
+
+![kermit](/docs/kermit_ipad.png)
 
 ## Tutorials (work in progress)
 
