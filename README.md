@@ -16,7 +16,7 @@ http://doi.org/10.5281/zenodo.3406897
 
 ## Lab Information
 
-For more information about the lab please visit the website ([LINK](https://www.mq.edu.au/research/research-centres-groups-and-facilities/healthy-people/facilities/meg)). Warning: use these scripts at your own risk - some have not been fully tested!
+For more information about the lab please visit the [website](https://www.mq.edu.au/research/research-centres-groups-and-facilities/healthy-people/facilities/meg). Warning: use these scripts at your own risk - some have not been fully tested!
 
 ## Structure Sensor
 
