@@ -20,10 +20,10 @@ function [headshape_downsampled] = downsample_headshape_new(cfg,...
 % - path_to_headshape     = path to .hsp file
 % - cfg.facial_info       = 'yes' or 'no';
 % - cfg.remove_zlim       = number (remove points which lie 
-%                           Xmm above nasion on the z-axis)
+%                           Xmm above nasion on the z-axis (up-down)
 % - cfg.method            = method for decimation ('gridaverage' or
-%                           'nonuniform'. Girdaverage seems to give more 
-%                           consistent results)
+%                           'nonuniform'). Gridaverage seems to give more 
+%                           consistent results.
 %
 %%%%%%%%%%%%%%%%
 % Fancy Options:
@@ -34,11 +34,16 @@ function [headshape_downsampled] = downsample_headshape_new(cfg,...
 % cfg.downsample_facial_info_amount = amount of facial info downsampling.
 %                                   The higher the number the more 
 %                                   downsampling (default = 9).
-% cfg.facial_info_above_z           = number
-% cfg.facial_info_below_z           = number
-% cfg.facial_info_above_y           = number 
-% cfg.facial_info_above_y           = number 
-% cfg.facial_info_below_x           = number
+% cfg.facial_info_above_z           = remove points Xmm above the nasion 
+%                                   on the z-axis (up-down)
+% cfg.facial_info_below_z           = remove points Xmm below the nasion 
+%                                   on the z-axis (up-down)
+% cfg.facial_info_above_y           = remove points Xmm above the nasion 
+%                                   on the y-axis (left-right) 
+% cfg.facial_info_above_y           = remove points Xmm below the nasion 
+%                                   on the y-axis (left-right) 
+% cfg.facial_info_below_x           = remove points Xmm below the nasion 
+%                                   on the x-axis (forwards-backwards)
 %
 %%%%%%%%%%%
 % Outputs:
