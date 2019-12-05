@@ -1,10 +1,13 @@
 function mq_3D_coreg(cfg)
-%%%%%%%%%%%%%%%
-% mq_3D_coreg
-%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% mq_3D_coreg: a function designed for the user to mark the location of
+% the head-position indicator (or 'marker') coils on a 3D .obj object file,
+% captured using the Ipad-based Structure Sensor. A downsampled .hsp file
+% and .elp file are produced.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 %%%%%%%%%%%%%%%
-% cfg options
+% cfg options:
 %%%%%%%%%%%%%%%
 % - cfg.dir_name         = directory for saving
 % - cfg.path_to_obj      = full path to the .obj or .zip file
@@ -24,8 +27,21 @@ function mq_3D_coreg(cfg)
 % Other:
 %%%%%%%%%%%
 % If cfg.dir_name or cfg.path_to_obj is not specified, a GUI is presented
-% for the 
-%
+% for the user to select the relevent .obj or .zip file. The results are
+% then saved in the current directory
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%
+% Example Function Call:
+%%%%%%%%%%%%%%%%%%%%%%%%
+% cfg                  = [];
+% cfg.subject_number   = '1111';
+% cfg.subject_intials  = 'RS';
+% cfg.project_number   = '176';
+% cfg.scaling          = 0.98;
+% mq_3D_coreg(cfg)
+
+%% Display
+disp('mq_3D_coreg (v1.0) written by Robert Seymour, 2019');
 
 %% Check inputs
 
@@ -113,13 +129,13 @@ catch
     disp('Could not plot')
 end
 
-%
+% Mark the location of the marker (or HPI) coils
 cfg = [];
 cfg.channel = {'LPAred','RPAyel','PFblue','LPFwh','RPFblack'};
 cfg.method = 'headshape';
 markers_from_headshape = ft_electrodeplacement_RS(cfg,head_surface_bti);
 
-% Shrink by 5% to compensate for markers
+% Shrink by X% to compensate for markers
 markers_from_headshape2 = markers_from_headshape;
 markers_from_headshape2.chanpos = ft_warp_apply([scaling 0 0 0;...
     0 scaling 0 0; 0 0 scaling 0; 0 0 0 1],...
@@ -128,7 +144,6 @@ markers_from_headshape2.chanpos = ft_warp_apply([scaling 0 0 0;...
 % Make figure
 color_array = [1 0 0; 1 1 0; 0 0 1; 0 1 1; 0 0 0];
 
-%Make figure;
 try
     figure;
     views = [0 0; 90 90];
@@ -185,6 +200,10 @@ if size(head_surface_decimated.pos,1) > 10000
 end
 
 %% Deal with facial points
+% This is all hard-coded based on a few participants. Perhaps in the 
+% future the user could specify these options? Anyway they're kept large,
+% and the user can use downsample_headshape_new to trim.
+
 count_facialpoints = find(head_surface_decimated2.pos(:,3)<20 ...
     & head_surface_decimated2.pos(:,3)>-80 ...
     & head_surface_decimated2.pos(:,1)>20 ...
@@ -197,12 +216,6 @@ else
     rrr = 1:4:length(facialpoints);
     facialpoints = facialpoints(rrr,:); clear rrr;
 end
-
-% figure;
-% ft_plot_mesh(facialpoints,'vertexcolor','r','vertexsize',10); hold on;
-% ft_plot_mesh(head_surface_bti); alpha 0.3; camlight;
-% title({'Facial Points are'; 'Marked in Red'});
-% view([90 0]);
 
 % Remove facial points for now
 head_surface_decimated2.pos(count_facialpoints,:) = [];
