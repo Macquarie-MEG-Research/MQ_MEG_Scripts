@@ -278,7 +278,7 @@ end
 
 disp('Writing .elp file');
 
-elp = fopen([file_out_name '.elp.elp'], 'wt');
+elp = fopen([file_out_name '.elp'], 'wt');
 
 fids_for_mesh2 = round((fids_for_mesh./1000),4);
 markers_from_headshape3 = round((markers_from_headshape2.chanpos./1000),4);
@@ -330,7 +330,7 @@ fclose(elp);
 %% Now we need to create a dummy .hsp file to read into MEG160
 disp('Writing .hsp file');
 
-hsp = fopen([file_out_name '.hsp.hsp'], 'wt');
+hsp = fopen([file_out_name '.hsp'], 'wt');
 
 pos_dec = round((head_surface_decimated.pos./1000),4);
 
