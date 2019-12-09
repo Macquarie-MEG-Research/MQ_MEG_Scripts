@@ -30,7 +30,7 @@ For a tutorial on how to use the *NEW* stucture sensor for Head Position Indicat
 - Event-Related Fields (to follow)
 - Time-Frequency Analysis (to follow)
 - **[MEG-MRI Coregistration](https://macquarie-meg-research.github.io/MQ_MEG_Scripts/docs/meg_mri_coreg_tutorial.html)**
-- Source Analysis with Beamformers (to follow)
+- **[Source Analysis with Beamformers](https://macquarie-meg-research.github.io/MQ_MEG_Scripts/docs/mq_source_tutorial.html)
 - Working with MEG Data from 125-Channel Child Scanner (to follow)
 
 ## Contributing
