@@ -194,6 +194,9 @@ cfg.grid.nonlinear = 'yes'; % use non-linear normalization
 cfg.mri            = mri_realigned2;
 cfg.grid.unit      ='mm';
 cfg.inwardshift    = -1.5;
+cfg.spmversion     = 'spm12';   % default is 'spm8'
+cfg.spmmethod      = 'new';      % default is 'old'
+disp('Using the new SPM12 normalisation... this takes 3-4 minutes');
 sourcemodel3d      = ft_prepare_sourcemodel(cfg);
 
 % Create figure to check headodel and sourcemodel match
