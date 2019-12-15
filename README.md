@@ -33,6 +33,10 @@ For a tutorial on how to use the *NEW* stucture sensor for Head Position Indicat
 - **[Source Analysis with Beamformers](https://macquarie-meg-research.github.io/MQ_MEG_Scripts/docs/mq_source_tutorial.html)**
 - Working with MEG Data from 125-Channel Child Scanner (to follow)
 
+## Parcellations
+
+Various parcellations for MEG source analysis are available at [Macquarie-MEG-Research/MQ_MEG_parcel](https://github.com/Macquarie-MEG-Research/MQ_MEG_parcel).
+
 ## Contributing
 
 Please contribute your MATLAB (or Python) scripts to this repository by submitting a pull request and/or emailing scripts to [Robert Seymour](mailto:robert.seymour@mq.edu.au), [Paul Sowman](mailto:paul.sowman@mq.edu.au) or [Wei He](mailto:wei.he@mq.edu.au). 
