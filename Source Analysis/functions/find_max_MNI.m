@@ -15,7 +15,7 @@ end
 MNI_coord_of_max = template_grid.pos(d(1),:);
 
 
-fprintf('Maximum MNI co-ordinates: %d %d %d\n',MNI_coord_of_max(1),...
+fprintf('Maximum MNI co-ordinates: %.0f %.0f %.0f\n',MNI_coord_of_max(1),...
     MNI_coord_of_max(2),MNI_coord_of_max(3));
 
 if strcmp(neurosynth,'yes')
