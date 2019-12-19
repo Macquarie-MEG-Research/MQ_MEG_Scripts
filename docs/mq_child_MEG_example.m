@@ -17,11 +17,13 @@ save_path   = '/Volumes/Robert T5/2712/processed/';
 
 % Path to MQ_MEG_Scripts
 % Download from https://github.com/Macquarie-MEG-Research/MQ_MEG_Scripts
-path_to_MQ_MEG_Scripts = '/Users/rseymoue/Documents/GitHub/MQ_MEG_Scripts/';
+%path_to_MQ_MEG_Scripts = '/Users/rseymoue/Documents/GitHub/MQ_MEG_Scripts/';
+path_to_MQ_MEG_Scripts = '/Users/44737483/Documents/scripts_mcq/MQ_MEG_Scripts/';
 
 % Path to MEMES
 % Download from https://github.com/Macquarie-MEG-Research/MEMES
-path_to_MEMES = '/Users/rseymoue/Documents/GitHub/MEMES/';
+%path_to_MEMES = '/Users/rseymoue/Documents/GitHub/MEMES/';
+path_to_MEMES = '/Users/44737483/Documents/scripts_mcq/MEMES/';
 
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -95,9 +97,10 @@ print('grad_trans','-dpng','-r200');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 bad_coil = '';
-[head_movt]  = get_reTHM_data(dir_name,confile,grad_trans,hspfile,...
-    bad_coil,0.99)
+[head_movt, confound]  = get_reTHM_data(dir_name,confile,grad_trans,...
+    hspfile,bad_coil,0.99)
 save head_movt head_movt
+save confound confound
 
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -138,15 +141,15 @@ cfg.bsfreq                  = [99.5 100.5];
 alldata                     = ft_preprocessing(cfg,alldata);
 
 % Create layout file for later and save
-cfg             = [];
-cfg.grad        = grad_trans;
-lay             = ft_prepare_layout(cfg, alldata);
+cfg                         = [];
+cfg.grad                    = alldata.grad;
+lay                         = ft_prepare_layout(cfg, alldata);
 save lay lay
 
 % Cut out MEG channels
-cfg             = [];
-cfg.channel     = alldata.label(1:125);
-alldata         = ft_selectdata(cfg,alldata);
+cfg                         = [];
+cfg.channel                 = alldata.label(1:125);
+alldata                     = ft_selectdata(cfg,alldata);
 
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -182,13 +185,6 @@ ft_databrowser(cfg, comp);
 ft_hastoolbox('brewermap',1);
 colormap123     = colormap(flipud(brewermap(64,'RdBu')));
 
-cfg             = [];
-cfg.layout      = lay;
-cfg.blocksize   = 4;
-cfg.zlim        = 'maxabs';
-cfg.colormap    = colormap123;
-[rej_comp]      = ft_icabrowser(cfg, comp);
-
 % Decompose the original data as it was prior to downsampling 
 disp('Decomposing the original data as it was prior to downsampling...');
 cfg           = [];
@@ -218,11 +214,7 @@ cfg.trialdef.eventvalue     = [1 8];%Trigger numbers
 cfg.Fs                      = 1000;
 cfg.First_Channel           = 146; % First trigger channel
 cfg.Last_Channel            = 158; % Last trigger channel
-%cfg.Audio_Channel       = 135; % 0 for none
 cfg.Audio_Channel           = 0;
-% cfg.First_Channel       = 194; % First trigger channel
-% cfg.Last_Channel        = 200; % Last trigger channel
-% cfg.Audio_Channel       = 167; % -1 for none
 cfg.fixed_offset            = 42; %defualt = []; 42ms for those without audio channel.
 cfg.trialfun                = 'FindTriggers_AudioCh'; %
 cfg                         = ft_definetrial(cfg);
@@ -309,8 +301,8 @@ save predeviant predeviant
 
 % Some very simple ERF analysis:
 cfg                 = [];
-cfg.layout = lay;
-cfg.linewidth = 2;
+cfg.layout          = lay;
+cfg.linewidth       = 2;
 figure; ft_multiplotER(cfg, ft_timelockanalysis([],deviant), ...
     ft_timelockanalysis([],predeviant));
 
@@ -337,18 +329,18 @@ child_MEMES(dir_name,grad_trans,headshape_downsampled,...
 % 14. Source Localisation of Auditory N1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-disp('Performing Single Subject Source Analysis');
-
 % Load template sourcemodel (8mm)
-load(['/Users/rseymoue/Documents/GitHub/fieldtrip/template/'...
+load(['/Users/44737483/Documents/fieldtrip-20181213/template/'...
     'sourcemodel/standard_sourcemodel3d8mm.mat']);
 template_grid = sourcemodel;
 template_grid = ft_convert_units(template_grid,'mm');
 clear sourcemodel;
 
-%% Load data
+%% Load sensor-level data data
 load('deviant.mat');
 load('predeviant.mat');
+
+%% Load headmodel, sourcemodel and transformed MEG sensors
 load('headmodel.mat');
 load('sourcemodel3d.mat');
 load('grad_trans.mat');
@@ -361,24 +353,23 @@ predeviant  = ft_selectdata(cfg,predeviant);
 
 %% Prepare leadfield
 disp('Preparing Leadfield');
-cfg = [];
-cfg.method='lcmv';
-cfg.channel = deviant.label;
-cfg.grid = sourcemodel3d;
-cfg.headmodel = headmodel;
-cfg.grad = grad_trans;
+cfg             = [];
+cfg.method      ='lcmv';
+cfg.channel     = deviant.label;
+cfg.grid        = sourcemodel3d;
+cfg.headmodel   = headmodel;
+cfg.grad        = grad_trans;
 %cfg.reducerank      = 2; %(default = 3 for EEG, 2 for MEG)
-cfg.normalize       = 'no' ; %Normalise Leadfield: 'yes' for beamformer
-%cfg.normalizeparam  = 1;
+cfg.normalize   = 'yes' ; %Normalise Leadfield: 'yes' for beamformer
 lf = ft_prepare_leadfield(cfg);
 
-% make a figure of the single subject{i} headmodel, and grid positions
+% make a figure of the single shell headmodel, and grid positions
 figure; hold on;
 ft_plot_vol(headmodel,  'facecolor', 'cortex', 'edgecolor', 'none');
 alpha 0.5; camlight;
 ft_plot_mesh(lf.pos(lf.inside,:));
 ft_plot_sens(grad_trans, 'style', 'r*'); view([0,0]);
-%print('lf_headmodel_sens','-dpng','-r100');
+print('lf_headmodel_sens','-dpng','-r100');
 
 %% Compute covariance
 cfg                  = [];
@@ -415,12 +406,12 @@ source_deviant         = ft_sourceanalysis(cfg, avg_deviant);
 source_predeviant      = ft_sourceanalysis(cfg, avg_predeviant);
 
 % Replace .pos field with template_grid.pos
-source_deviant.pos      = template_grid.pos;
-source_predeviant.pos   = template_grid.pos;
+source_deviant.pos     = template_grid.pos;
+source_predeviant.pos  = template_grid.pos;
 
 % Remove cfg field to save memory
-source_deviant          = rmfield(source_deviant,'cfg');
-source_predeviant       = rmfield(source_predeviant,'cfg');
+source_deviant         = rmfield(source_deviant,'cfg');
+source_predeviant      = rmfield(source_predeviant,'cfg');
 
 disp('Saving data');
 save source_deviant source_deviant
@@ -437,24 +428,27 @@ save source_predeviant source_predeviant
 [predeviant_N1_post]    = get_source_pow(predeviant,source_predeviant,...
     [0.1 0.15]);
 
+% Subtract post-pre
 cfg = [];
 cfg.parameter           = 'avg.pow';
 cfg.operation           = 'subtract';
 source_N1_deviant       = ft_math(cfg,deviant_N1_post,deviant_N1_pre);
 source_N1_predeviant    = ft_math(cfg,predeviant_N1_post,predeviant_N1_pre);
 
-cfg                 = [];
-cfg.funparameter    = 'pow';
+% 2D Plot
+cfg                     = [];
+cfg.funparameter        = 'pow';
 ft_sourceplot(cfg,source_N1_deviant);
 title('DEVIANT N1');
 ft_sourceplot(cfg,source_N1_predeviant);
 title('PREDEVIANT N1');
 
 % Display Max MNI Coordinate
-[MNI_coord_of_max] = find_max_MNI(source_N1_deviant,template_grid,'yes');
+[MNI_coord_of_max]      = find_max_MNI(source_N1_predeviant,...
+    template_grid,'yes');
 
 %% Interpolate
-mri         = ft_read_mri(['/Users/rseymoue/Documents/GitHub/fieldtrip/'...
+mri         = ft_read_mri(['/Users/44737483/Documents/fieldtrip-20181213/'...
     'template/anatomy/single_subj_T1.nii']);
 
 % Interpolate onto SPM brain
@@ -462,14 +456,14 @@ cfg                         = [];
 cfg.voxelcoord              = 'no';
 cfg.parameter               = 'pow';
 cfg.interpmethod            = 'nearest';
-source_N1_deviant_interp    = ft_sourceinterpolate(cfg, ...
-    source_N1_deviant, mri);
+source_N1_predeviant_interp    = ft_sourceinterpolate(cfg, ...
+    source_N1_predeviant, mri);
 
 %% Plot
 cfg                 = [];
 cfg.funparameter    = 'pow';
 cfg.zlim            = 'maxabs';
-ft_sourceplot(cfg,source_N1_deviant_interp);
+ft_sourceplot(cfg,source_N1_predeviant_interp);
 ft_hastoolbox('brewermap', 1);         % ensure this toolbox is on the path
 colormap(flipud(brewermap(64,'RdBu'))) % change the colormap
 saveas(gcf,'sourceN1.png');
@@ -500,11 +494,7 @@ title('DEVIANT - PREDEVIANT');
 % Display Max MNI Coordinate
 [MNI_coord_of_max] = find_max_MNI(source_MMF,template_grid,'yes');
 
-%% Interpolate
-mri         = ft_read_mri(['/Users/rseymoue/Documents/GitHub/fieldtrip/'...
-    'template/anatomy/single_subj_T1.nii']);
-
-% Interpolate onto SPM brain
+%% Interpolate onto SPM brain
 cfg                         = [];
 cfg.voxelcoord              = 'no';
 cfg.parameter               = 'pow';

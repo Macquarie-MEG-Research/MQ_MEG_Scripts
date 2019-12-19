@@ -8,9 +8,9 @@ If you use these scripts, please cite:
 
 [![DOI](https://zenodo.org/badge/176198353.svg)](https://zenodo.org/badge/latestdoi/176198353)
 ```markdown
-Robert Seymour. (2019, September 13). 
-Macquarie-MEG-Research/MQ_MEG_Scripts: v0.1 for Zenodo (Version v0.1zenodo). 
-Zenodo. 
+Robert Seymour. (2019, September 13).
+Macquarie-MEG-Research/MQ_MEG_Scripts: v0.1 for Zenodo (Version v0.1zenodo).
+Zenodo.
 http://doi.org/10.5281/zenodo.3406897
 ```
 
@@ -31,7 +31,7 @@ For a tutorial on how to use the *NEW* stucture sensor for Head Position Indicat
 - Time-Frequency Analysis (to follow)
 - **[MEG-MRI Coregistration](https://macquarie-meg-research.github.io/MQ_MEG_Scripts/docs/meg_mri_coreg_tutorial.html)**
 - **[Source Analysis with Beamformers](https://macquarie-meg-research.github.io/MQ_MEG_Scripts/docs/mq_source_tutorial.html)**
-- Working with MEG Data from 125-Channel Child Scanner (to follow)
+- **[Working with MEG Data from 125-Channel Child Scanner](https://macquarie-meg-research.github.io/MQ_MEG_Scripts/docs/mq_child_MEG_example.html)**
 
 ## Parcellations
 
@@ -39,7 +39,7 @@ Various parcellations for MEG source analysis are available at [Macquarie-MEG-Re
 
 ## Contributing
 
-Please contribute your MATLAB (or Python) scripts to this repository by submitting a pull request and/or emailing scripts to [Robert Seymour](mailto:robert.seymour@mq.edu.au), [Paul Sowman](mailto:paul.sowman@mq.edu.au) or [Wei He](mailto:wei.he@mq.edu.au). 
+Please contribute your MATLAB (or Python) scripts to this repository by submitting a pull request and/or emailing scripts to [Robert Seymour](mailto:robert.seymour@mq.edu.au), [Paul Sowman](mailto:paul.sowman@mq.edu.au) or [Wei He](mailto:wei.he@mq.edu.au).
 
 It is advised you also include some information about the function along the lines of the code snippet below. Also include a WARNING in your code if it is still under development.
 
