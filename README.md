@@ -31,7 +31,7 @@ For a tutorial on how to use the *NEW* stucture sensor for Head Position Indicat
 - [Time-Frequency Analysis](http://www.fieldtriptoolbox.org/tutorial/timefrequencyanalysis/)
 - **[MEG-MRI Coregistration](https://macquarie-meg-research.github.io/MQ_MEG_Scripts/docs/meg_mri_coreg_tutorial.html)**
 - **[Source Analysis with Beamformers](https://macquarie-meg-research.github.io/MQ_MEG_Scripts/docs/mq_source_tutorial.html)**
-- **[Whole-Brain Source Statistics](https://macquarie-meg-research.github.io/MQ_MEG_Scripts/docs/mq_source_statistics_tutorial.html)
+- **[Whole-Brain Source Statistics](https://macquarie-meg-research.github.io/MQ_MEG_Scripts/docs/mq_source_statistics_tutorial.html)**
 - **[Working with MEG Data from 125-Channel Child Scanner](https://macquarie-meg-research.github.io/MQ_MEG_Scripts/docs/mq_child_MEG_example.html)**
 
 ## Parcellations
