@@ -1,5 +1,8 @@
 function [decimated_headshape] = decimate_headshape(headshape, method)
 
+warning('THIS FUNCTION IS OUT OF DATE... PLEASE USE headshape_downsample_new.m');
+pause(2.0);
+
 % Convert to a pointcloud in MATLAB
 headshape_pc = pointCloud(headshape.pos);
 
