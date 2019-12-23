@@ -14,13 +14,3 @@ If there was low-frequency noise present during your recording, certain MEG chan
 ```matlab
 [sat] = mq_detect_saturations(dir_name,confile,0.01,'adult','array')
 ``` 
- 
-### Loading Data into Fieldtrip
-
-### Filtering
-
-### ICA
-
-### Trial Definition
-
-### Removing "Bad" Trials
