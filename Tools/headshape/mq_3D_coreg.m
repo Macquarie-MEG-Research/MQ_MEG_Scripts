@@ -42,6 +42,7 @@ function mq_3D_coreg(cfg)
 
 %% Display
 disp('mq_3D_coreg (v1.0) written by Robert Seymour, 2019');
+ft_warning('Make sure you are using a version of Fieldtrip later than August 2019');
 
 %% Check inputs
 
@@ -86,16 +87,39 @@ end
 
 %% Start of function proper
 % Load in data
-disp('Loading .obj file. This takes around 10 seconds');
-head_surface = ft_read_headshape(path_to_obj);
+try
+    disp('Loading .obj file. This takes around 10 seconds');
+    head_surface = ft_read_headshape(path_to_obj);
+catch
+   disp('Did you download a version of Fieldtrip later than August 2019?');
+end
+    
 %head_surface.color = head_surface.color./255;
 head_surface = ft_convert_units(head_surface,'mm');
 
 % Mark fiducials on headsurface
-cfg = [];
-cfg.channel = {'Nasion','Left PA','Right PA'};
-cfg.method = 'headshape';
-fiducials = ft_electrodeplacement_RS(cfg,head_surface);
+try
+    cfg = [];
+    cfg.channel = {'Nasion','Left PA','Right PA'};
+    cfg.method = 'headshape';
+    fiducials = ft_electrodeplacement_RS(cfg,head_surface);
+catch
+    % Most likely the user will not have ft_electrodeplacement_RS in the
+    % right location. Try to correct this
+    disp('Trying to move ft_electrodeplacement_RS to the Fieldtrip directory');
+    [ftver, ftpath] = ft_version();
+    loc_of_ft_elecRS = which('ft_electrodeplacement_RS2');
+    copyfile(loc_of_ft_elecRS,ftpath);
+    
+    % Rename ft_electrodeplacement_RS2 to ft_electrodeplacement_RS
+    movefile(fullfile(ftpath,'ft_electrodeplacement_RS2.m'),...
+        fullfile(ftpath,'ft_electrodeplacement_RS.m'));
+    
+    cfg = [];
+    cfg.channel = {'Nasion','Left PA','Right PA'};
+    cfg.method = 'headshape';
+    fiducials = ft_electrodeplacement_RS(cfg,head_surface);
+end
 
 % Convert to BTI space
 cfg = [];
