@@ -1,6 +1,9 @@
 function [headshape_downsampled] = downsample_headshape(path_to_headshape...
     ,varargin)
 
+warning('THIS FUNCTION IS OUT OF DATE... PLEASE USE headshape_downsample_new.m');
+pause(2.0);
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % headshape_downsampled: a function to downsample headshape information for
 % more accurate coregistration. Typically the function will downsample
