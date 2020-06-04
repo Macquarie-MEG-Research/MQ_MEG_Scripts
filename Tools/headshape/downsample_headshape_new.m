@@ -117,7 +117,7 @@ if ~isempty(facial_info)
     
     % If the user specified to downsample the facial info, do this!
     
-    if ~isempty(downsample_facial_info)
+    if ~isempty(downsample_facial_info) && ~isempty(count_facialpoints)
         
         headshape_pc = pointCloud(facialpoints);
         decimated_facial_info = pcdownsample(headshape_pc,...
